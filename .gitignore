@@ -1,0 +1,8 @@
+.chrome-headless-profile/
+.edge-headless-profile/
+_chrome_preview/
+_chrome_profile/
+_chrome_preview.err.log
+_chrome_preview.out.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Memo — Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black:   #111110;
+  --ink:     #1C1B19;
+  --muted:   #6B6960;
+  --faint:   #9E9C94;
+  --border:  #E2DFD8;
+  --surface: #F4F2ED;
+  --white:   #FFFFFF;
+  --yellow:  #F5E100;
+  --orange:  #E85D24;
+  --robot-accent: var(--orange);
+  --robot-accent-rgb: 232, 93, 36;
+  --robot-accent-soft: #FBF0ED;
+  --robot-accent-border: #F0C4B0;
+  --robot-accent-line: rgba(var(--robot-accent-rgb), 0.22);
+  --robot-accent-glow: rgba(var(--robot-accent-rgb), 0.18);
+  --green:   #1A7A46;
+  --green-bg:#EBF5EF;
+  --room-fill: #FAFAF7;
+  --room-border: #D8D5CE;
+  --restricted: var(--robot-accent-soft);
+  --restricted-border: var(--robot-accent-border);
+}
+:root[data-robot-config="green"] {
+  --robot-accent: #2F8A5A;
+  --robot-accent-rgb: 47, 138, 90;
+  --robot-accent-soft: #EAF5EE;
+  --robot-accent-border: #B9DAC7;
+  --robot-accent-line: rgba(var(--robot-accent-rgb), 0.22);
+  --robot-accent-glow: rgba(var(--robot-accent-rgb), 0.18);
+}
+body {
+  font-family: 'Geist', -apple-system, sans-serif;
+  background: #E8E5DF;
+  display: flex; justify-content: center;
+  padding: 40px 0 60px; min-height: 100vh;
+}
+.recording-brand {
+  position: fixed;
+  top: 28px;
+  left: 30px;
+  z-index: 220;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.recording-logo-wrap {
+  position: relative;
+  padding: 0;
+}
+.recording-logo {
+  width: 208px;
+  height: auto;
+  display: block;
+  opacity: 0.96;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.08));
+}
+.recording-tag {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.recording-tag::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: rgba(28,27,25,0.28);
+}
+.recording-credit {
+  position: fixed;
+  right: 34px;
+  bottom: 30px;
+  z-index: 220;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  text-align: right;
+}
+.recording-credit-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.recording-credit-name {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 0.96;
+  letter-spacing: -1.4px;
+  color: var(--ink);
+  text-shadow: 0 10px 24px rgba(255,255,255,0.5);
+}
+@media (max-width: 880px) {
+  body {
+    padding-top: 98px;
+    padding-bottom: 82px;
+  }
+  .recording-brand {
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+  }
+  .recording-logo-wrap {
+    padding: 0;
+  }
+  .recording-logo {
+    width: 172px;
+  }
+  .recording-tag {
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    justify-content: center;
+  }
+  .recording-tag::before {
+    width: 18px;
+  }
+  .recording-credit {
+    left: 50%;
+    right: auto;
+    bottom: 14px;
+    transform: translateX(-50%);
+    align-items: center;
+    text-align: center;
+  }
+  .recording-credit-name {
+    font-size: 24px;
+    letter-spacing: -1px;
+  }
+}
+.phone {
+  width: 393px; background: var(--surface); border-radius: 52px;
+  overflow: hidden; position: relative;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.07);
+  display: flex; flex-direction: column; height: 852px;
+}
+
+/* STATUS BAR */
+.sb {
+  flex-shrink: 0; padding: 16px 28px 0;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; font-weight: 500; color: var(--ink);
+}
+.sb-r { display: flex; align-items: center; gap: 6px; }
+
+/* NAV */
+.nav {
+  flex-shrink: 0; padding: 14px 24px 12px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.nav-title { font-size: 26px; font-weight: 600; color: var(--ink); letter-spacing: -0.8px; line-height: 1; }
+.nav-title span { font-size: 13px; font-weight: 400; color: var(--faint); display: block; margin-top: 3px; letter-spacing: -0.1px; }
+
+/* MODE TOGGLE (live / path history) */
+.mode-toggle {
+  display: flex; align-items: center;
+  background: var(--white); border: 1px solid var(--border); border-radius: 20px;
+  padding: 3px;
+}
+.mode-btn {
+  height: 28px; padding: 0 12px; border-radius: 16px; border: none;
+  font-family: inherit; font-size: 12px; font-weight: 400; color: var(--faint);
+  background: transparent; cursor: pointer; white-space: nowrap; transition: all 0.14s;
+}
+.mode-btn.active { background: var(--ink); color: var(--white); font-weight: 500; }
+
+/* MAP CANVAS CONTAINER */
+.map-container {
+  flex-shrink: 0;
+  margin: 0 16px;
+  background: #EFEDE8;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+  height: 340px;
+}
+
+/* SVG map fills the container */
+.map-svg {
+  width: 100%; height: 100%;
+  display: block;
+}
+
+/* Memo dot on the map — positioned via JS */
+.memo-dot {
+  position: absolute;
+  width: 20px; height: 20px;
+  background: var(--yellow);
+  border-radius: 50%;
+  border: 2.5px solid var(--ink);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  transition: left 4s ease-in-out, top 4s ease-in-out;
+  cursor: pointer;
+}
+.memo-dot::after {
+  content: '';
+  position: absolute;
+  inset: -6px; border-radius: 50%;
+  background: rgba(245,225,0,0.25);
+  animation: ripple 2s ease-out infinite;
+}
+@keyframes ripple {
+  0%   { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* Zone pin — appears when you tap a zone */
+.zone-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.zone-pin.visible { display: flex; animation: popin 0.2s ease; }
+@keyframes popin { from { transform: translate(-50%, -90%) scale(0.85); opacity:0; } to { transform: translate(-50%,-100%) scale(1); opacity:1; } }
+.zone-bubble {
+  background: var(--ink); color: var(--white);
+  font-size: 12px; font-weight: 500; letter-spacing: -0.2px;
+  padding: 6px 11px; border-radius: 10px; white-space: nowrap;
+}
+.zone-bubble-tail {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--ink);
+}
+
+/* MAP CONTROLS */
+.map-controls {
+  position: absolute; top: 12px; right: 12px;
+  display: flex; flex-direction: column; gap: 6px; z-index: 15;
+}
+.map-ctrl-btn {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--white); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.12s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.map-ctrl-btn:hover { background: var(--surface); }
+
+/* MAP LEGEND */
+.map-legend {
+  position: absolute; bottom: 12px; left: 12px;
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 10px;
+  padding: 6px 10px;
+  backdrop-filter: blur(4px);
+}
+.legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; color: var(--muted);
+}
+.legend-dot-yellow {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--yellow); border: 1.5px solid var(--ink);
+}
+.legend-dot-restricted {
+  width: 8px; height: 8px; border-radius: 2px;
+  background: repeating-linear-gradient(
+    45deg, var(--robot-accent-border), var(--robot-accent-border) 2px, var(--robot-accent-soft) 2px, var(--robot-accent-soft) 5px
+  );
+  border: 1px solid var(--robot-accent);
+}
+
+/* SCROLL */
+.scroll {
+  flex: 1; overflow-y: auto; padding: 14px 16px 16px; scrollbar-width: none;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+/* STATUS CARD */
+.status-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 18px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 13px;
+  margin-bottom: 10px;
+  box-shadow: 0 10px 24px rgba(var(--robot-accent-rgb), 0.05);
+}
+.status-led { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.led-green { background: #4ADE80; animation: pulse 2.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 50%{box-shadow:0 0 0 4px rgba(74,222,128,0)} }
+.status-body { flex: 1; }
+.status-main { font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: -0.1px; }
+.status-sub  { font-size: 11px; color: var(--faint); margin-top: 2px; }
+.map-memo-card {
+  margin-bottom: 10px;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 16px 0;
+  background:
+    radial-gradient(circle at 78% 24%, rgba(var(--robot-accent-rgb), 0.18) 0%, rgba(var(--robot-accent-rgb), 0) 52%),
+    linear-gradient(150deg, #FAF4EE 0%, #F2EAE2 100%);
+  border: 1px solid rgba(var(--robot-accent-rgb), 0.16);
+}
+.map-memo-copy {
+  flex: 1;
+  padding-bottom: 16px;
+}
+.map-memo-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--robot-accent);
+  margin-bottom: 7px;
+}
+.map-memo-title {
+  font-size: 20px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  max-width: 176px;
+}
+.map-memo-sub {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--faint);
+  margin-top: 9px;
+  max-width: 184px;
+}
+.map-memo-art {
+  width: 124px;
+  flex-shrink: 0;
+}
+.map-memo-art img {
+  width: 100%;
+  display: block;
+  transform: translateY(4px);
+  filter: drop-shadow(0 16px 24px rgba(28,27,25,0.12));
+}
+
+/* ZONE CARDS */
+.section-label {
+  font-size: 11px; font-weight: 500; color: rgba(var(--robot-accent-rgb), 0.82);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 2px 2px 10px;
+}
+.zone-list {
+  display: flex; flex-direction: column; gap: 1px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 18px; overflow: hidden; margin-bottom: 10px;
+}
+.zone-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.12s;
+}
+.zone-row:last-child { border-bottom: none; }
+.zone-row:hover { background: #FAFAF7; }
+.zone-row.restricted { background: #FDF6F3; }
+.zone-row.restricted:hover { background: #FAF0EC; }
+.zone-icon {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.zi-kitchen  { background: #FFF2E5; }
+.zi-living   { background: #EBF0FC; }
+.zi-laundry  { background: #EBF5EF; }
+.zi-hall     { background: #F0EFEA; }
+.zi-bedroom  { background: #EDE9FE; }
+.zi-restrict { background: #FBF0ED; }
+.zone-info { flex: 1; }
+.zone-name { font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: -0.1px; }
+.zone-meta { font-size: 11px; color: var(--faint); margin-top: 1px; }
+.zone-badge {
+  font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 8px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.zb-active { background: var(--green-bg); color: var(--green); }
+.zb-restrict { background: var(--robot-accent-soft); color: var(--robot-accent); }
+.zb-last { background: var(--surface); color: var(--faint); border: 1px solid var(--border); }
+
+/* PATH HISTORY toggle indicator */
+.path-on-hint {
+  display: none;
+  margin-bottom: 10px;
+  background: var(--ink); color: var(--white);
+  border-radius: 14px; padding: 10px 14px;
+  font-size: 12px; align-items: center; gap: 10px;
+  box-shadow: inset 0 0 0 1px rgba(var(--robot-accent-rgb), 0.28);
+}
+.path-on-hint.visible { display: flex; }
+
+/* ── MEMO DETAIL SHEET ── */
+.detail-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none; align-items: flex-end;
+  z-index: 30; border-radius: 52px; overflow: hidden;
+}
+.detail-overlay.open { display: flex; }
+.detail-sheet {
+  width: 100%; background: var(--white);
+  border-radius: 28px 28px 0 0;
+  animation: slideup 0.3s cubic-bezier(0.32,0.72,0,1);
+  display: flex; flex-direction: column;
+  max-height: 88%; overflow: hidden;
+}
+@keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.ds-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 12px auto 0; flex-shrink: 0; }
+.ds-header {
+  padding: 16px 20px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.ds-title-block { display: flex; align-items: center; gap: 10px; }
+.ds-led { width: 8px; height: 8px; border-radius: 50%; background: #4ADE80; animation: pulse 2.5s ease-in-out infinite; flex-shrink: 0; }
+.ds-title { font-size: 17px; font-weight: 600; color: var(--ink); letter-spacing: -0.4px; }
+.ds-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Camera feed */
+.cam-feed {
+  margin: 14px 20px 0;
+  height: 200px; border-radius: 18px;
+  background: #0A0A09; overflow: hidden;
+  position: relative; flex-shrink: 0;
+}
+.cam-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.cam-scanline {
+  position: absolute; left: 0; right: 0; height: 1px;
+  background: rgba(255,255,255,0.04);
+  animation: scan 2.5s linear infinite;
+}
+@keyframes scan { 0% { top: 0; opacity:0; } 5% { opacity:1; } 95% { opacity:1; } 100% { top: 100%; opacity:0; } }
+
+/* Focus bracket corners */
+.cam-focus {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 70px; height: 60px;
+}
+.cf-tl, .cf-tr, .cf-bl, .cf-br {
+  position: absolute; width: 14px; height: 14px;
+}
+.cf-tl { top:0; left:0; border-top: 1.5px solid rgba(245,225,0,0.75); border-left: 1.5px solid rgba(245,225,0,0.75); border-radius: 3px 0 0 0; }
+.cf-tr { top:0; right:0; border-top: 1.5px solid rgba(245,225,0,0.75); border-right: 1.5px solid rgba(245,225,0,0.75); border-radius: 0 3px 0 0; }
+.cf-bl { bottom:0; left:0; border-bottom: 1.5px solid rgba(245,225,0,0.75); border-left: 1.5px solid rgba(245,225,0,0.75); border-radius: 0 0 0 3px; }
+.cf-br { bottom:0; right:0; border-bottom: 1.5px solid rgba(245,225,0,0.75); border-right: 1.5px solid rgba(245,225,0,0.75); border-radius: 0 0 3px 0; }
+
+/* Memo silhouette in feed */
+.cam-memo {
+  position: absolute;
+  bottom: 0; right: 20px;
+  width: 90px; opacity: 0.18;
+  filter: brightness(2);
+  animation: cam-sway 6s ease-in-out infinite;
+}
+@keyframes cam-sway {
+  0%,100% { transform: translateX(0); }
+  40%      { transform: translateX(-8px); }
+  70%      { transform: translateX(4px); }
+}
+
+.cam-live-badge {
+  position: absolute; top: 10px; left: 12px;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 4px 9px;
+}
+.cam-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--robot-accent); animation: liveblink 1s ease-in-out infinite; }
+@keyframes liveblink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.cam-live-text { font-size: 10px; color: rgba(255,255,255,0.8); font-weight: 500; letter-spacing: 0.04em; }
+
+.cam-room-badge {
+  position: absolute; bottom: 10px; left: 12px;
+  background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 4px 9px;
+  font-size: 10px; color: rgba(255,255,255,0.65);
+}
+.cam-elapsed {
+  position: absolute; top: 10px; right: 12px;
+  background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 4px 9px;
+  font-size: 10px; color: rgba(255,255,255,0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Detail stats row */
+.ds-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin: 14px 20px 0; flex-shrink: 0;
+}
+.ds-stat {
+  background: var(--surface); border-radius: 12px;
+  padding: 10px 12px;
+}
+.ds-stat-label { font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.ds-stat-value { font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+.ds-stat-unit  { font-size: 11px; font-weight: 400; color: var(--faint); }
+
+/* Recent in this room */
+.ds-section { padding: 14px 20px 0; flex-shrink: 0; }
+.ds-sec-label { font-size: 11px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+.ds-task-list { display: flex; flex-direction: column; gap: 6px; padding-bottom: 28px; }
+.ds-task-row {
+  display: flex; align-items: center; gap: 11px;
+  background: var(--surface); border-radius: 12px; padding: 10px 12px;
+}
+.ds-task-icon { width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.ds-task-name { font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: -0.1px; }
+.ds-task-time { font-size: 11px; color: var(--faint); margin-top: 1px; }
+.ds-task-meta { flex: 1; }
+.ds-task-badge { font-size: 10px; font-weight: 500; padding: 3px 7px; border-radius: 7px; white-space: nowrap; flex-shrink: 0; }
+.dtb-ok    { background: var(--green-bg); color: var(--green); }
+.dtb-ago   { background: var(--surface); color: var(--faint); border: 1px solid var(--border); }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  flex-shrink: 0; background: var(--white); border-top: 1px solid var(--border);
+  padding: 12px 4px 34px; display: flex; justify-content: space-around;
+}
+.n-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 10px; cursor: pointer; min-width: 54px;
+  transition: background 0.12s;
+}
+.n-item:hover { background: var(--surface); }
+.n-lbl { font-size: 10px; color: var(--faint); }
+.n-lbl.on { color: var(--ink); font-weight: 500; }
+.n-pip { width: 4px; height: 4px; border-radius: 2px; background: var(--yellow); margin-top: 1px; }
+</style>
+<script src="robot-config-preview.js"></script>
+</head>
+<body>
+<div class="recording-brand" aria-hidden="true">
+  <div class="recording-logo-wrap">
+    <img class="recording-logo" src="Untitled%20design(12).png" alt="Sunday Robotics">
+  </div>
+  <div class="recording-tag">Full app interface</div>
+</div>
+<div class="recording-credit" aria-hidden="true">
+  <span class="recording-credit-kicker">Made by</span>
+  <span class="recording-credit-name">Steyn Knollema</span>
+</div>
+<div class="phone">
+
+  <!-- STATUS BAR -->
+  <div class="sb">
+    <span>9:41</span>
+    <div class="sb-r">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+        <rect x="0" y="5" width="3" height="7" rx="1" fill="#1C1B19" opacity="0.25"/>
+        <rect x="4.5" y="3.5" width="3" height="8.5" rx="1" fill="#1C1B19" opacity="0.5"/>
+        <rect x="9" y="2" width="3" height="10" rx="1" fill="#1C1B19" opacity="0.75"/>
+        <rect x="13.5" y="0" width="3" height="12" rx="1" fill="#1C1B19"/>
+      </svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+        <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="#1C1B19"/>
+        <path d="M2.5 5.5C4 4 5.9 3 8 3s4 1 5.5 2.5" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M0.5 3C2.4 1.1 5.1 0 8 0s5.6 1.1 7.5 3" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none" opacity="0.4"/>
+        <path d="M4.5 7.5C5.5 6.5 6.7 6 8 6s2.5.5 3.5 1.5" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      </svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+        <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#1C1B19" stroke-opacity="0.3"/>
+        <rect x="1.5" y="1.5" width="15" height="9" rx="2.5" fill="#1C1B19"/>
+        <path d="M23 4.5V7.5c1-.4 1.8-1.2 1.8-1.5s-.8-1.1-1.8-1.5z" fill="#1C1B19" opacity="0.4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-title">Map<span>Live floor plan</span></div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-live" onclick="setMode('live')">Live</button>
+      <button class="mode-btn" id="btn-path" onclick="setMode('path')">Last run</button>
+    </div>
+  </div>
+
+  <!-- MAP CANVAS -->
+  <div class="map-container" id="map-container">
+
+    <!-- SVG FLOOR PLAN -->
+    <svg class="map-svg" viewBox="0 0 361 340" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- Floor background -->
+      <rect width="361" height="340" fill="#EFEDE8"/>
+
+      <!-- ── ROOMS ── -->
+
+      <!-- Kitchen -->
+      <rect x="12" y="12" width="148" height="110" rx="6" fill="#FAFAF7" stroke="#D8D5CE" stroke-width="1.2"/>
+      <text x="32" y="34" font-family="Geist, sans-serif" font-size="9" font-weight="500" fill="#9E9C94" letter-spacing="0.06em" text-transform="uppercase">KITCHEN</text>
+      <!-- dishwasher zone pin marker -->
+      <circle cx="110" cy="85" r="5" fill="#F5E100" stroke="#1C1B19" stroke-width="1.5"/>
+      <!-- table zone pin marker -->
+      <circle cx="55" cy="85" r="5" fill="#F5E100" stroke="#1C1B19" stroke-width="1.5"/>
+      <!-- coffee machine zone marker -->
+      <circle cx="130" cy="50" r="5" fill="#F5E100" stroke="#1C1B19" stroke-width="1.5"/>
+      <!-- Counter label hint -->
+      <text x="55" y="98" font-family="Geist, sans-serif" font-size="8" fill="#C8C5BE" text-anchor="middle">table</text>
+      <text x="110" y="98" font-family="Geist, sans-serif" font-size="8" fill="#C8C5BE" text-anchor="middle">dishwasher</text>
+      <text x="130" y="43" font-family="Geist, sans-serif" font-size="8" fill="#C8C5BE" text-anchor="middle">coffee</text>
+
+      <!-- Living room -->
+      <rect x="172" y="12" width="177" height="110" rx="6" fill="#FAFAF7" stroke="#D8D5CE" stroke-width="1.2"/>
+      <text x="192" y="34" font-family="Geist, sans-serif" font-size="9" font-weight="500" fill="#9E9C94" letter-spacing="0.06em">LIVING ROOM</text>
+
+      <!-- Hallway -->
+      <rect x="12" y="134" width="148" height="56" rx="6" fill="#FAFAF7" stroke="#D8D5CE" stroke-width="1.2"/>
+      <text x="32" y="167" font-family="Geist, sans-serif" font-size="9" font-weight="500" fill="#9E9C94" letter-spacing="0.06em">HALLWAY</text>
+      <!-- shoe zone -->
+      <circle cx="90" cy="162" r="5" fill="#F5E100" stroke="#1C1B19" stroke-width="1.5"/>
+      <text x="90" y="175" font-family="Geist, sans-serif" font-size="8" fill="#C8C5BE" text-anchor="middle">shoes</text>
+
+      <!-- Laundry room -->
+      <rect x="172" y="134" width="80" height="56" rx="6" fill="#EBF5EF" stroke="#B8D8C4" stroke-width="1.2"/>
+      <text x="188" y="167" font-family="Geist, sans-serif" font-size="9" font-weight="500" fill="#7AAA8C" letter-spacing="0.06em">LAUNDRY</text>
+      <!-- laundry basket zone -->
+      <circle cx="230" cy="162" r="5" fill="#F5E100" stroke="#1C1B19" stroke-width="1.5"/>
+      <text x="230" y="175" font-family="Geist, sans-serif" font-size="8" fill="#7AAA8C" text-anchor="middle">basket</text>
+
+      <!-- Bedroom 1 -->
+      <rect x="12" y="202" width="116" height="126" rx="6" fill="#FAFAF7" stroke="#D8D5CE" stroke-width="1.2"/>
+      <text x="32" y="224" font-family="Geist, sans-serif" font-size="9" font-weight="500" fill="#9E9C94" letter-spacing="0.06em">BEDROOM 1</text>
+
+      <!-- Bedroom 2 — restricted -->
+      <rect x="140" y="202" width="80" height="126" rx="6" fill="#FBF0ED" stroke="#F0C4B0" stroke-width="1.2"/>
+      <!-- hatching pattern for restricted -->
+      <line x1="140" y1="210" x2="148" y2="202" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="218" x2="164" y2="202" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="226" x2="180" y2="194" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="234" x2="188" y2="194" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="242" x2="196" y2="194" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="250" x2="204" y2="194" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="258" x2="212" y2="194" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="266" x2="220" y2="194" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="274" x2="220" y2="202" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="282" x2="220" y2="210" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="290" x2="220" y2="218" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="298" x2="220" y2="226" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="306" x2="220" y2="234" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="314" x2="220" y2="242" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="148" y1="322" x2="220" y2="250" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="152" y1="328" x2="220" y2="260" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="160" y1="328" x2="220" y2="268" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="168" y1="328" x2="220" y2="276" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="176" y1="328" x2="220" y2="284" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="184" y1="328" x2="220" y2="292" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="192" y1="328" x2="220" y2="300" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="200" y1="328" x2="220" y2="308" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="208" y1="328" x2="220" y2="316" stroke="#F0C4B0" stroke-width="0.8"/>
+      <line x1="216" y1="328" x2="220" y2="324" stroke="#F0C4B0" stroke-width="0.8"/>
+      <text x="160" y="224" font-family="Geist, sans-serif" font-size="9" font-weight="500" fill="#C44B1A" letter-spacing="0.06em">BEDROOM 2</text>
+      <text x="180" y="238" font-family="Geist, sans-serif" font-size="8" fill="#E8A090" text-anchor="middle">off limits</text>
+
+      <!-- Bathroom -->
+      <rect x="264" y="134" width="85" height="56" rx="6" fill="#FAFAF7" stroke="#D8D5CE" stroke-width="1.2"/>
+      <text x="280" y="167" font-family="Geist, sans-serif" font-size="9" font-weight="500" fill="#9E9C94" letter-spacing="0.06em">BATHROOM</text>
+
+      <!-- Study -->
+      <rect x="232" y="202" width="117" height="126" rx="6" fill="#FAFAF7" stroke="#D8D5CE" stroke-width="1.2"/>
+      <text x="250" y="224" font-family="Geist, sans-serif" font-size="9" font-weight="500" fill="#9E9C94" letter-spacing="0.06em">STUDY</text>
+
+      <!-- Doorways (gaps in walls) -->
+      <rect x="154" y="55" width="18" height="8" fill="#EFEDE8"/>
+      <rect x="154" y="150" width="18" height="8" fill="#EFEDE8"/>
+      <rect x="90" y="122" width="10" height="12" fill="#EFEDE8"/>
+      <rect x="218" y="150" width="10" height="12" fill="#EFEDE8"/>
+      <rect x="126" y="190" width="10" height="12" fill="#EFEDE8"/>
+      <rect x="226" y="190" width="10" height="12" fill="#EFEDE8"/>
+
+      <!-- PATH HISTORY — shown in path mode -->
+      <g id="path-history" opacity="0">
+        <polyline points="86,162 86,148 86,120 86,95 55,85" fill="none" stroke="#E85D24" stroke-width="2" stroke-dasharray="5 3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+        <polyline points="55,85 85,80 110,85" fill="none" stroke="#E85D24" stroke-width="2" stroke-dasharray="5 3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+        <circle cx="55" cy="85" r="4" fill="#E85D24" opacity="0.5"/>
+        <circle cx="110" cy="85" r="4" fill="#E85D24" opacity="0.5"/>
+        <circle cx="86" cy="162" r="4" fill="#4ADE80" stroke="white" stroke-width="1.5"/>
+        <text x="100" y="160" font-family="Geist, sans-serif" font-size="8" fill="#E85D24" opacity="0.8">start</text>
+        <text x="40" y="80" font-family="Geist, sans-serif" font-size="8" fill="#E85D24" opacity="0.8">table</text>
+        <text x="113" y="80" font-family="Geist, sans-serif" font-size="8" fill="#E85D24" opacity="0.8">dishwasher</text>
+      </g>
+    </svg>
+
+    <!-- MEMO DOT (live position) -->
+    <div class="memo-dot" id="memo-dot" style="left:25%;top:37%"
+         onclick="showZonePin('Kitchen', this)"></div>
+
+    <!-- ZONE PIN TOOLTIP -->
+    <div class="zone-pin" id="zone-pin">
+      <div class="zone-bubble" id="zone-bubble-text">Kitchen</div>
+      <div class="zone-bubble-tail"></div>
+    </div>
+
+    <!-- MAP CONTROLS -->
+    <div class="map-controls">
+      <!-- centre on Memo -->
+      <div class="map-ctrl-btn" onclick="centerOnMemo()" title="Center on Memo">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#6B6960" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="7" cy="7" r="2.5"/>
+          <line x1="7" y1="1" x2="7" y2="3.5"/><line x1="7" y1="10.5" x2="7" y2="13"/>
+          <line x1="1" y1="7" x2="3.5" y2="7"/><line x1="10.5" y1="7" x2="13" y2="7"/>
+        </svg>
+      </div>
+      <!-- edit zones -->
+      <div class="map-ctrl-btn" onclick="alert('Zone editor would open here')" title="Edit zones">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#6B6960" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.5 1.5l3 3L4 13H1v-3L9.5 1.5z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- MAP LEGEND -->
+    <div class="map-legend">
+      <div class="legend-item">
+        <div class="legend-dot-yellow"></div>
+        <span>Memo</span>
+      </div>
+      <div class="legend-item" style="width:1px;height:12px;background:var(--border);"></div>
+      <div class="legend-item">
+        <div class="legend-dot-restricted"></div>
+        <span>Off limits</span>
+      </div>
+    </div>
+
+  </div><!-- end map-container -->
+
+  <!-- SCROLL CONTENT -->
+  <div class="scroll">
+    <div class="map-memo-card">
+      <div class="map-memo-copy">
+        <div class="map-memo-kicker">Live View</div>
+        <div class="map-memo-title">See where Memo is and where it has been.</div>
+        <div class="map-memo-sub">Review room access, recent paths, and current location without opening another screen.</div>
+      </div>
+      <div class="map-memo-art"><img src="Untitled%20design(11).png" data-robot-config-image data-robot-config-src-blue="Blue%20large.png" alt="Memo in the house"></div>
+    </div>
+
+    <!-- Memo status — tappable -->
+    <div class="status-card" onclick="openDetail()" style="cursor:pointer">
+      <div class="status-led led-green"></div>
+      <div class="status-body">
+        <div class="status-main">Memo is in the kitchen</div>
+        <div class="status-sub">Standing by · last task 2h 58m ago</div>
+      </div>
+      <svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="#D8D5CE" stroke-width="1.5" stroke-linecap="round"><polyline points="1 1 6 6 1 11"/></svg>
+    </div>
+
+    <!-- Path history hint -->
+    <div class="path-on-hint" id="path-hint">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"><polyline points="1 7 5 3 9 7 13 3"/></svg>
+      <span>Showing last dishes run · 6:42 pm today</span>
+    </div>
+
+    <!-- Zone list -->
+    <div class="section-label">Zones</div>
+    <div class="zone-list">
+
+      <div class="zone-row" onclick="flyToZone(25,37,'Kitchen')">
+        <div class="zone-icon zi-kitchen">
+          <svg width="16" height="16" viewBox="0 0 24 22" fill="none" stroke="#D4631A" stroke-width="1.7" stroke-linecap="round"><ellipse cx="12" cy="13" rx="10" ry="7"/><ellipse cx="12" cy="12" rx="5.5" ry="4"/></svg>
+        </div>
+        <div class="zone-info">
+          <div class="zone-name">Kitchen</div>
+          <div class="zone-meta">3 zones: table, dishwasher, coffee machine</div>
+        </div>
+        <span class="zone-badge zb-active">Memo here</span>
+      </div>
+
+      <div class="zone-row" onclick="flyToZone(69,37,'Living room')">
+        <div class="zone-icon zi-living">
+          <svg width="16" height="16" viewBox="0 0 22 18" fill="none" stroke="#3A5FA0" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="7" width="20" height="10" rx="3"/><path d="M5 7V4a2 2 0 0 1 4 0v3"/><path d="M13 7V4a2 2 0 0 1 4 0v3"/></svg>
+        </div>
+        <div class="zone-info">
+          <div class="zone-name">Living room</div>
+          <div class="zone-meta">No active zones</div>
+        </div>
+        <span class="zone-badge zb-last">Last: 3 days ago</span>
+      </div>
+
+      <div class="zone-row" onclick="flyToZone(65,57,'Laundry room')">
+        <div class="zone-icon zi-laundry">
+          <svg width="16" height="16" viewBox="0 0 22 22" fill="none" stroke="#1A7A46" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="18" height="19" rx="3"/><circle cx="11" cy="13" r="4.5"/></svg>
+        </div>
+        <div class="zone-info">
+          <div class="zone-name">Laundry room</div>
+          <div class="zone-meta">1 zone: basket</div>
+        </div>
+        <span class="zone-badge zb-last">Last: yesterday</span>
+      </div>
+
+      <div class="zone-row" onclick="flyToZone(25,57,'Hallway')">
+        <div class="zone-icon zi-hall">
+          <svg width="16" height="16" viewBox="0 0 20 18" fill="none" stroke="#6B6960" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c0 0 2-6 6-6l4 2 6-2c2 0 4 2 4 4v2H2z"/><line x1="2" y1="14" x2="22" y2="14"/></svg>
+        </div>
+        <div class="zone-info">
+          <div class="zone-name">Hallway</div>
+          <div class="zone-meta">1 zone: shoe area</div>
+        </div>
+        <span class="zone-badge zb-last">Last: 2 days ago</span>
+      </div>
+
+      <div class="zone-row restricted" onclick="">
+        <div class="zone-icon zi-restrict">
+          <svg width="16" height="16" viewBox="0 0 18 22" fill="none" stroke="#E85D24" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="14" height="11" rx="3"/><path d="M5 10V7a4 4 0 0 1 8 0v3"/></svg>
+        </div>
+        <div class="zone-info">
+          <div class="zone-name">Bedroom 2</div>
+          <div class="zone-meta">Marked off limits</div>
+        </div>
+        <span class="zone-badge zb-restrict">Off limits</span>
+      </div>
+
+    </div>
+
+  </div><!-- end scroll -->
+
+  <!-- MEMO DETAIL SHEET -->
+  <div class="detail-overlay" id="detail-overlay" onclick="closeDetailOutside(event)">
+    <div class="detail-sheet" id="detail-sheet">
+      <div class="ds-handle"></div>
+
+      <!-- Header -->
+      <div class="ds-header">
+        <div class="ds-title-block">
+          <div class="ds-led"></div>
+          <span class="ds-title">Memo · Kitchen</span>
+        </div>
+        <button class="ds-close" onclick="closeDetail()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#6B6960" stroke-width="1.8" stroke-linecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+        </button>
+      </div>
+
+      <!-- Camera feed -->
+      <div class="cam-feed">
+        <div class="cam-grid"></div>
+        <div class="cam-scanline"></div>
+        <!-- Memo silhouette ghost in scene -->
+        <div class="cam-focus">
+          <div class="cf-tl"></div><div class="cf-tr"></div>
+          <div class="cf-bl"></div><div class="cf-br"></div>
+        </div>
+        <!-- Simulated depth blobs for kitchen scene atmosphere -->
+        <div style="position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(to top, rgba(255,255,255,0.04), transparent);"></div>
+        <div style="position:absolute;bottom:8px;left:18px;width:50px;height:36px;background:rgba(255,255,255,0.04);border-radius:4px;"></div>
+        <div style="position:absolute;bottom:8px;left:80px;width:30px;height:48px;background:rgba(255,255,255,0.03);border-radius:4px;"></div>
+        <div style="position:absolute;bottom:8px;right:30px;width:68px;height:58px;background:rgba(255,255,255,0.04);border-radius:4px;"></div>
+
+        <div class="cam-live-badge">
+          <div class="cam-live-dot"></div>
+          <span class="cam-live-text">LIVE</span>
+        </div>
+        <div class="cam-elapsed" id="cam-elapsed">0:00</div>
+        <div class="cam-room-badge">Memo camera · kitchen</div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="ds-stats">
+        <div class="ds-stat">
+          <div class="ds-stat-label">Status</div>
+          <div class="ds-stat-value" style="font-size:13px;color:#1A7A46">Standing by</div>
+        </div>
+        <div class="ds-stat">
+          <div class="ds-stat-label">Battery</div>
+          <div class="ds-stat-value">73<span class="ds-stat-unit">%</span></div>
+        </div>
+        <div class="ds-stat">
+          <div class="ds-stat-label">Tasks today</div>
+          <div class="ds-stat-value">2<span class="ds-stat-unit"> done</span></div>
+        </div>
+      </div>
+
+      <!-- Recent activity in this room -->
+      <div class="ds-section" style="overflow-y:auto;flex:1;">
+        <div class="ds-sec-label">Recent in kitchen</div>
+        <div class="ds-task-list">
+
+          <div class="ds-task-row">
+            <div class="ds-task-icon ti-coffee">
+              <svg width="16" height="16" viewBox="0 0 22 22" fill="none" stroke="#8B5E3C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12v8a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V6z"/><path d="M16 8h2a2.5 2.5 0 0 1 0 5h-2"/></svg>
+            </div>
+            <div class="ds-task-meta">
+              <div class="ds-task-name">Coffee</div>
+              <div class="ds-task-time">Today · 7:00 am · 4 min</div>
+            </div>
+            <span class="ds-task-badge dtb-ok">Done</span>
+          </div>
+
+          <div class="ds-task-row">
+            <div class="ds-task-icon ti-dishes">
+              <svg width="16" height="14" viewBox="0 0 24 22" fill="none" stroke="#D4631A" stroke-width="1.7" stroke-linecap="round"><ellipse cx="12" cy="13" rx="10" ry="7"/><ellipse cx="12" cy="12" rx="5.5" ry="4"/></svg>
+            </div>
+            <div class="ds-task-meta">
+              <div class="ds-task-name">Dishes</div>
+              <div class="ds-task-time">Yesterday · 6:42 pm · 11 min</div>
+            </div>
+            <span class="ds-task-badge dtb-ok">Done</span>
+          </div>
+
+          <div class="ds-task-row">
+            <div class="ds-task-icon ti-counter">
+              <svg width="16" height="16" viewBox="0 0 22 22" fill="none" stroke="#6B6960" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="13" width="18" height="5" rx="2"/><path d="M5 13V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/></svg>
+            </div>
+            <div class="ds-task-meta">
+              <div class="ds-task-name">Counter wiping</div>
+              <div class="ds-task-time">Yesterday · 2:00 pm · 6 min</div>
+            </div>
+            <span class="ds-task-badge dtb-ago">Yesterday</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="n-item">
+      <svg width="22" height="20" viewBox="0 0 22 20" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8.5L11 1l10 7.5V19a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V8.5z"/><path d="M8 20v-8h6v8"/></svg>
+      <span class="n-lbl">Home</span>
+    </div>
+    <div class="n-item">
+      <svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 1L1 13h9l-1 8 10-12h-9l1-8z"/></svg>
+      <span class="n-lbl">Skills</span>
+    </div>
+    <div class="n-item">
+      <svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="18" height="18" rx="3"/><line x1="14" y1="1" x2="14" y2="5"/><line x1="6" y1="1" x2="6" y2="5"/><line x1="1" y1="9" x2="19" y2="9"/></svg>
+      <span class="n-lbl">Schedule</span>
+    </div>
+    <div class="n-item">
+      <svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#1C1B19" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5l6-4 6 4 6-4v16l-6 4-6-4-6 4V5z"/><line x1="7" y1="1" x2="7" y2="17"/><line x1="13" y1="5" x2="13" y2="21"/></svg>
+      <span class="n-lbl on">Map</span>
+      <div class="n-pip"></div>
+    </div>
+    <div class="n-item">
+      <svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round"><line x1="4" y1="22" x2="4" y2="14"/><line x1="9" y1="22" x2="9" y2="6"/><line x1="14" y1="22" x2="14" y2="10"/><line x1="19" y1="22" x2="19" y2="2"/></svg>
+      <span class="n-lbl">Activity</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── MEMO DETAIL SHEET ────────────────────────────────────
+  let elapsedSec = 0;
+  let elapsedInterval = null;
+
+  function openDetail() {
+    document.getElementById('detail-overlay').classList.add('open');
+    elapsedSec = 0;
+    document.getElementById('cam-elapsed').textContent = '0:00';
+    elapsedInterval = setInterval(() => {
+      elapsedSec++;
+      const m = Math.floor(elapsedSec / 60);
+      const s = elapsedSec % 60;
+      document.getElementById('cam-elapsed').textContent = m + ':' + String(s).padStart(2,'0');
+    }, 1000);
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-overlay').classList.remove('open');
+    clearInterval(elapsedInterval);
+  }
+
+  function closeDetailOutside(e) {
+    if (e.target === document.getElementById('detail-overlay')) closeDetail();
+  }
+
+  // ── MODE TOGGLE ──────────────────────────────────────────
+  function setMode(mode) {
+    document.getElementById('btn-live').classList.toggle('active', mode === 'live');
+    document.getElementById('btn-path').classList.toggle('active', mode === 'path');
+    const pathG = document.getElementById('path-history');
+    const dot   = document.getElementById('memo-dot');
+    const hint  = document.getElementById('path-hint');
+    if (mode === 'path') {
+      pathG.style.transition = 'opacity 0.4s';
+      pathG.style.opacity = '1';
+      dot.style.opacity = '0.3';
+      hint.classList.add('visible');
+    } else {
+      pathG.style.opacity = '0';
+      dot.style.opacity = '1';
+      hint.classList.remove('visible');
+    }
+  }
+
+  // ── MEMO DOT WANDER ─────────────────────────────────────
+  const positions = [
+    { left: '25%', top: '37%', label: 'Kitchen' },
+    { left: '30%', top: '42%', label: 'Kitchen' },
+    { left: '20%', top: '30%', label: 'Kitchen' },
+    { left: '24%', top: '50%', label: 'Hallway' },
+  ];
+  let posIdx = 0;
+  const mapParams = new URLSearchParams(window.location.search);
+  function wanderMemo() {
+    posIdx = (posIdx + 1) % positions.length;
+    const p = positions[posIdx];
+    const dot = document.getElementById('memo-dot');
+    dot.style.left = p.left;
+    dot.style.top  = p.top;
+  }
+  setInterval(wanderMemo, 5000);
+  if (mapParams.get('show') === 'detail') {
+    window.addEventListener('load', () => {
+      setTimeout(openDetail, 250);
+    }, { once: true });
+  }
+
+  // ── ZONE PIN ─────────────────────────────────────────────
+  function showZonePin(label, dotEl) {
+    const pin  = document.getElementById('zone-pin');
+    const text = document.getElementById('zone-bubble-text');
+    const map  = document.getElementById('map-container');
+    text.textContent = label;
+    const mapRect = map.getBoundingClientRect();
+    const dotRect = dotEl.getBoundingClientRect();
+    const l = dotRect.left - mapRect.left + dotRect.width  / 2;
+    const t = dotRect.top  - mapRect.top;
+    pin.style.left = l + 'px';
+    pin.style.top  = t + 'px';
+    pin.classList.add('visible');
+    setTimeout(() => pin.classList.remove('visible'), 2500);
+  }
+
+  // ── FLY TO ZONE (from zone list) ─────────────────────────
+  function flyToZone(leftPct, topPct, label) {
+    const dot = document.getElementById('memo-dot');
+    const pin = document.getElementById('zone-pin');
+    const text = document.getElementById('zone-bubble-text');
+    text.textContent = label;
+    // animate dot to zone location (just shows the label)
+    const map = document.getElementById('map-container');
+    pin.style.left = (map.offsetWidth  * leftPct / 100) + 'px';
+    pin.style.top  = (map.offsetHeight * topPct  / 100) + 'px';
+    pin.classList.add('visible');
+    setTimeout(() => pin.classList.remove('visible'), 2500);
+  }
+
+  // ── CENTRE ON MEMO ───────────────────────────────────────
+  function centerOnMemo() {
+    const dot = document.getElementById('memo-dot');
+    const pin = document.getElementById('zone-pin');
+    const text = document.getElementById('zone-bubble-text');
+    const map = document.getElementById('map-container');
+    const l = parseFloat(dot.style.left) / 100 * map.offsetWidth;
+    const t = parseFloat(dot.style.top)  / 100 * map.offsetHeight;
+    text.textContent = 'Memo';
+    pin.style.left = l + 'px';
+    pin.style.top  = t + 'px';
+    pin.classList.add('visible');
+    setTimeout(() => pin.classList.remove('visible'), 1800);
+  }
+</script>
+
+<script>
+(function () {
+  const routes = {
+    Home: 'memo-dashboard-v5.html',
+    Skills: 'memo-skills-v3.html',
+    Schedule: 'memo-schedule.html',
+    Map: 'memo-map.html',
+    Activity: 'memo-activity.html'
+  };
+
+  document.querySelectorAll('.bottom-nav .n-item').forEach((item) => {
+    const label = item.querySelector('.n-lbl');
+    if (!label) return;
+    const href = routes[label.textContent.trim()];
+    if (!href) return;
+    const go = () => { navigateWithConfig(href); };
+    item.setAttribute('role', 'link');
+    item.tabIndex = 0;
+    item.addEventListener('click', go);
+    item.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        go();
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

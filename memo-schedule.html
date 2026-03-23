@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Memo — Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black:   #111110;
+  --ink:     #1C1B19;
+  --muted:   #6B6960;
+  --faint:   #9E9C94;
+  --border:  #E2DFD8;
+  --surface: #F4F2ED;
+  --white:   #FFFFFF;
+  --yellow:  #F5E100;
+  --orange:  #E85D24;
+  --robot-accent: var(--orange);
+  --robot-accent-rgb: 232, 93, 36;
+  --robot-accent-soft: #FBF0ED;
+  --robot-accent-border: #F0C4B0;
+  --robot-accent-line: rgba(var(--robot-accent-rgb), 0.22);
+  --robot-accent-glow: rgba(var(--robot-accent-rgb), 0.18);
+  --green:   #1A7A46;
+  --green-bg:#EBF5EF;
+  --blue:    #1E6FBB;
+  --blue-bg: #EBF2FB;
+  --purple:  #6D28D9;
+  --purple-bg:#EDE9FE;
+}
+:root[data-robot-config="green"] {
+  --robot-accent: #2F8A5A;
+  --robot-accent-rgb: 47, 138, 90;
+  --robot-accent-soft: #EAF5EE;
+  --robot-accent-border: #B9DAC7;
+  --robot-accent-line: rgba(var(--robot-accent-rgb), 0.22);
+  --robot-accent-glow: rgba(var(--robot-accent-rgb), 0.18);
+}
+body {
+  font-family: 'Geist', -apple-system, sans-serif;
+  background: #E8E5DF;
+  display: flex; justify-content: center;
+  padding: 40px 0 60px; min-height: 100vh;
+}
+.recording-brand {
+  position: fixed;
+  top: 28px;
+  left: 30px;
+  z-index: 220;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.recording-logo-wrap {
+  position: relative;
+  padding: 0;
+}
+.recording-logo {
+  width: 208px;
+  height: auto;
+  display: block;
+  opacity: 0.96;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.08));
+}
+.recording-tag {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.recording-tag::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: rgba(28,27,25,0.28);
+}
+.recording-credit {
+  position: fixed;
+  right: 34px;
+  bottom: 30px;
+  z-index: 220;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  text-align: right;
+}
+.recording-credit-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.recording-credit-name {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 0.96;
+  letter-spacing: -1.4px;
+  color: var(--ink);
+  text-shadow: 0 10px 24px rgba(255,255,255,0.5);
+}
+@media (max-width: 880px) {
+  body {
+    padding-top: 98px;
+    padding-bottom: 82px;
+  }
+  .recording-brand {
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+  }
+  .recording-logo-wrap {
+    padding: 0;
+  }
+  .recording-logo {
+    width: 172px;
+  }
+  .recording-tag {
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    justify-content: center;
+  }
+  .recording-tag::before {
+    width: 18px;
+  }
+  .recording-credit {
+    left: 50%;
+    right: auto;
+    bottom: 14px;
+    transform: translateX(-50%);
+    align-items: center;
+    text-align: center;
+  }
+  .recording-credit-name {
+    font-size: 24px;
+    letter-spacing: -1px;
+  }
+}
+.phone {
+  width: 393px; background: var(--surface); border-radius: 52px;
+  overflow: hidden; position: relative;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.07);
+  display: flex; flex-direction: column; height: 852px;
+}
+
+/* STATUS BAR */
+.sb {
+  flex-shrink: 0; padding: 16px 28px 0;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; font-weight: 500; color: var(--ink);
+}
+.sb-r { display: flex; align-items: center; gap: 6px; }
+
+/* NAV */
+.nav {
+  flex-shrink: 0; padding: 14px 24px 10px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.nav-title { font-size: 26px; font-weight: 600; color: var(--ink); letter-spacing: -0.8px; line-height: 1; }
+.nav-title span { font-size: 13px; font-weight: 400; color: var(--faint); display: block; margin-top: 3px; letter-spacing: -0.1px; }
+.add-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--ink); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: opacity 0.14s;
+  box-shadow: 0 0 0 1px rgba(var(--robot-accent-rgb), 0.18);
+}
+.add-btn:hover { opacity: 0.8; }
+.add-btn:active { transform: scale(0.94); }
+
+/* DAY STRIP */
+.day-strip {
+  flex-shrink: 0;
+  padding: 0 16px 14px;
+  display: flex; gap: 6px;
+}
+.day-pill {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 8px 4px 7px; border-radius: 14px;
+  background: var(--white); border: 1px solid var(--border);
+  cursor: pointer; transition: background 0.12s, border-color 0.12s;
+  gap: 4px;
+}
+.day-pill:hover { background: #FAFAF7; }
+.day-pill.active {
+  background: var(--robot-accent-soft); border-color: var(--robot-accent-border);
+  box-shadow: 0 10px 22px rgba(var(--robot-accent-rgb), 0.08);
+}
+.day-pill.has-tasks { border-color: var(--robot-accent-border); }
+.day-name {
+  font-size: 10px; font-weight: 500; color: var(--faint);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.day-num { font-size: 15px; font-weight: 500; color: var(--ink); line-height: 1; }
+.day-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--yellow); }
+.day-pill.active .day-name,
+.day-pill.active .day-num { color: var(--robot-accent); }
+.day-pill.active .day-dot { background: var(--robot-accent); }
+
+/* HERO */
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 208px;
+  margin: 0 0 14px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--black);
+}
+.hero-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 78% 22%, rgba(var(--robot-accent-rgb), 0.2) 0%, rgba(var(--robot-accent-rgb), 0.06) 28%, rgba(var(--robot-accent-rgb), 0) 58%);
+  pointer-events: none;
+  z-index: 1;
+}
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(17,17,16,0.04) 16%, rgba(17,17,16,0.72) 100%);
+  z-index: 2;
+}
+.hero-kicker {
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(var(--robot-accent-rgb), 0.16);
+  border: 1px solid rgba(var(--robot-accent-rgb), 0.28);
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255,244,239,0.92);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.hero-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -0.7px;
+  line-height: 1.05;
+  max-width: 220px;
+}
+.hero-copy {
+  font-size: 12px;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.45;
+  max-width: 250px;
+}
+
+/* SCROLL */
+.scroll {
+  flex: 1; overflow-y: auto; padding: 0 16px 16px; scrollbar-width: none;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+/* TIME BLOCK SECTION */
+.time-block {
+  margin-bottom: 8px;
+}
+.time-label {
+  font-size: 11px; font-weight: 500; color: var(--faint);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 6px 2px 8px;
+}
+
+/* TASK CARD */
+.task-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 18px; margin-bottom: 8px; overflow: hidden;
+  cursor: pointer; transition: background 0.12s;
+}
+.task-card:hover { background: #FAFAF7; }
+.task-card.running {
+  border-color: var(--robot-accent-border);
+  box-shadow: 0 12px 24px rgba(var(--robot-accent-rgb), 0.06);
+}
+
+.task-row {
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 13px;
+}
+
+.task-time-col {
+  display: flex; flex-direction: column; align-items: flex-end;
+  min-width: 46px; flex-shrink: 0;
+}
+.task-time-main { font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: -0.2px; }
+.task-time-ampm { font-size: 10px; color: var(--faint); margin-top: 1px; }
+
+.task-divider { width: 1px; height: 36px; background: var(--border); flex-shrink: 0; }
+
+.task-icon {
+  width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.ti-dishes  { background: #FFF2E5; }
+.ti-coffee  { background: #F3ECE5; }
+.ti-laundry { background: #EBF0FC; }
+.ti-counter { background: #F0EFEA; }
+
+.task-body { flex: 1; min-width: 0; }
+.task-name { font-size: 14px; font-weight: 500; color: var(--ink); letter-spacing: -0.2px; margin-bottom: 2px; }
+.task-meta { font-size: 11px; color: var(--faint); display: flex; align-items: center; gap: 6px; }
+
+/* status badges */
+.status-tag {
+  font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 8px;
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+}
+.st-done   { background: var(--green-bg); color: var(--green); }
+.st-next   { background: #FEF3C7; color: #B45309; }
+.st-later  { background: var(--surface); color: var(--faint); border: 1px solid var(--border); }
+.st-skip   { background: var(--robot-accent-soft); color: var(--robot-accent); }
+.st-run    { background: var(--ink); color: var(--yellow); }
+
+/* toggle switch for skipping */
+.task-toggle {
+  flex-shrink: 0;
+  width: 36px; height: 20px; border-radius: 10px;
+  background: var(--border); position: relative; cursor: pointer;
+  transition: background 0.2s;
+}
+.task-toggle.on { background: var(--green); }
+.task-toggle::after {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--white); top: 2px; left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.task-toggle.on::after { transform: translateX(16px); }
+
+/* EMPTY SLOT */
+.empty-slot {
+  border: 1.5px dashed var(--border); border-radius: 18px;
+  padding: 16px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: border-color 0.12s, background 0.12s;
+}
+.empty-slot:hover { border-color: var(--robot-accent-border); background: rgba(var(--robot-accent-rgb), 0.04); }
+.empty-slot-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.empty-slot-text { font-size: 13px; color: var(--faint); }
+
+/* ADD TASK OVERLAY */
+.overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none; align-items: flex-end;
+  z-index: 10; border-radius: 52px; overflow: hidden;
+}
+.overlay.open { display: flex; }
+.sheet {
+  width: 100%; background: var(--white);
+  border-radius: 28px 28px 0 0;
+  padding: 0 0 40px;
+  animation: slideup 0.28s cubic-bezier(0.32,0.72,0,1);
+  display: flex; flex-direction: column; max-height: 86%;
+}
+@keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 12px auto 0; flex-shrink: 0; }
+.sheet-scroll { overflow-y: auto; flex: 1; scrollbar-width: none; padding-bottom: 4px; }
+.sheet-scroll::-webkit-scrollbar { display: none; }
+.sheet-header {
+  padding: 20px 22px 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sheet-title { font-size: 19px; font-weight: 600; color: var(--ink); letter-spacing: -0.5px; }
+.sheet-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.sheet-section { padding: 20px 22px 0; }
+.sheet-sec-label { font-size: 11px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+
+/* Skill picker grid */
+.skill-picker { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.sp-tile {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; transition: background 0.12s, border-color 0.12s;
+}
+.sp-tile:hover { background: #EDEAE4; }
+.sp-tile.selected { background: var(--ink); border-color: var(--ink); }
+.sp-tile.selected .sp-name { color: var(--white); }
+.sp-icon {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.sp-name { font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: -0.2px; }
+
+/* Time picker row */
+.time-picker {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.tp-chip {
+  height: 34px; padding: 0 14px; border-radius: 17px;
+  background: var(--surface); border: 1px solid var(--border);
+  font-family: inherit; font-size: 13px; font-weight: 400; color: var(--muted);
+  cursor: pointer; white-space: nowrap; transition: all 0.12s;
+}
+.tp-chip:hover { border-color: var(--ink); color: var(--ink); }
+.tp-chip.selected { background: var(--ink); border-color: var(--ink); color: var(--white); font-weight: 500; }
+
+/* Repeat picker */
+.repeat-picker { display: flex; flex-direction: column; gap: 6px; }
+.rp-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 14px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; cursor: pointer; transition: background 0.12s;
+}
+.rp-row:hover { background: #EDEAE4; }
+.rp-row.selected { background: var(--ink); border-color: var(--ink); }
+.rp-label { font-size: 13px; color: var(--ink); }
+.rp-row.selected .rp-label { color: var(--white); }
+.rp-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.rp-row.selected .rp-check { background: var(--yellow); border-color: var(--yellow); }
+
+/* Confirm button */
+.confirm-btn {
+  margin: 20px 22px 0; height: 50px; width: calc(100% - 44px);
+  background: var(--yellow); border: none; border-radius: 25px;
+  font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ink);
+  cursor: pointer; flex-shrink: 0;
+  transition: opacity 0.14s, transform 0.1s;
+}
+.confirm-btn:hover { opacity: 0.88; }
+.confirm-btn:active { transform: scale(0.97); }
+
+.sheet-note {
+  font-size: 12px;
+  color: var(--faint);
+  line-height: 1.45;
+  margin-top: 8px;
+}
+
+.overview-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.48);
+  display: none;
+  align-items: flex-end;
+  z-index: 20;
+  border-radius: 52px;
+  overflow: hidden;
+}
+.overview-overlay.open { display: flex; }
+.overview-sheet {
+  width: 100%;
+  background: var(--white);
+  border-radius: 28px 28px 0 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 88%;
+  animation: slideup 0.28s cubic-bezier(0.32,0.72,0,1);
+}
+.overview-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  margin: 12px auto 0;
+  flex-shrink: 0;
+}
+.overview-header {
+  padding: 18px 20px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+.overview-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+.overview-sub {
+  font-size: 12px;
+  color: var(--faint);
+  line-height: 1.45;
+  margin-top: 4px;
+}
+.overview-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.overview-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 20px 30px;
+  scrollbar-width: none;
+}
+.overview-scroll::-webkit-scrollbar { display: none; }
+.overview-stage {
+  position: relative;
+  margin-top: 14px;
+  height: 228px;
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 22% 26%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 36%),
+    linear-gradient(160deg, #171614 0%, #0E0D0C 100%);
+}
+.overview-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.overview-robot {
+  position: absolute;
+  right: 14px;
+  bottom: 0;
+  width: 150px;
+  filter: drop-shadow(0 20px 28px rgba(0,0,0,0.38));
+  animation: float 5.2s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.overview-badge,
+.overview-clock,
+.overview-room {
+  position: absolute;
+  z-index: 2;
+  background: rgba(0,0,0,0.58);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.76);
+}
+.overview-badge {
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.overview-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+.overview-clock { top: 12px; right: 12px; }
+.overview-room { bottom: 12px; left: 12px; }
+.overview-caption {
+  position: absolute;
+  left: 18px;
+  right: 150px;
+  bottom: 48px;
+  z-index: 2;
+}
+.overview-caption-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -0.6px;
+  line-height: 1.05;
+}
+.overview-caption-copy {
+  font-size: 12px;
+  color: rgba(255,255,255,0.74);
+  line-height: 1.45;
+  margin-top: 8px;
+}
+.overview-progress {
+  margin-top: 14px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(28,27,25,0.08);
+  overflow: hidden;
+}
+.overview-progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ink);
+  transition: width 0.18s linear;
+}
+.overview-events {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.overview-event {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 15px;
+  background: var(--surface);
+  transition: border-color 0.16s, background 0.16s;
+}
+.overview-event.active {
+  border-color: var(--ink);
+  background: var(--white);
+}
+.overview-event-time {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.overview-event-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-top: 6px;
+  letter-spacing: -0.2px;
+}
+.overview-event-copy {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+  flex-shrink: 0; background: var(--white); border-top: 1px solid var(--border);
+  padding: 12px 4px 34px; display: flex; justify-content: space-around;
+}
+.n-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 10px; cursor: pointer; min-width: 54px;
+  transition: background 0.12s;
+}
+.n-item:hover { background: var(--surface); }
+.n-lbl { font-size: 10px; color: var(--faint); }
+.n-lbl.on { color: var(--ink); font-weight: 500; }
+.n-pip { width: 4px; height: 4px; border-radius: 2px; background: var(--yellow); margin-top: 1px; }
+</style>
+<script src="robot-config-preview.js"></script>
+</head>
+<body>
+<div class="recording-brand" aria-hidden="true">
+  <div class="recording-logo-wrap">
+    <img class="recording-logo" src="Untitled%20design(12).png" alt="Sunday Robotics">
+  </div>
+  <div class="recording-tag">Full app interface</div>
+</div>
+<div class="recording-credit" aria-hidden="true">
+  <span class="recording-credit-kicker">Made by</span>
+  <span class="recording-credit-name">Steyn Knollema</span>
+</div>
+<div class="phone">
+
+  <!-- STATUS BAR -->
+  <div class="sb">
+    <span>9:41</span>
+    <div class="sb-r">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+        <rect x="0" y="5" width="3" height="7" rx="1" fill="#1C1B19" opacity="0.25"/>
+        <rect x="4.5" y="3.5" width="3" height="8.5" rx="1" fill="#1C1B19" opacity="0.5"/>
+        <rect x="9" y="2" width="3" height="10" rx="1" fill="#1C1B19" opacity="0.75"/>
+        <rect x="13.5" y="0" width="3" height="12" rx="1" fill="#1C1B19"/>
+      </svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+        <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="#1C1B19"/>
+        <path d="M2.5 5.5C4 4 5.9 3 8 3s4 1 5.5 2.5" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M0.5 3C2.4 1.1 5.1 0 8 0s5.6 1.1 7.5 3" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none" opacity="0.4"/>
+        <path d="M4.5 7.5C5.5 6.5 6.7 6 8 6s2.5.5 3.5 1.5" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      </svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+        <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#1C1B19" stroke-opacity="0.3"/>
+        <rect x="1.5" y="1.5" width="15" height="9" rx="2.5" fill="#1C1B19"/>
+        <path d="M23 4.5V7.5c1-.4 1.8-1.2 1.8-1.5s-.8-1.1-1.8-1.5z" fill="#1C1B19" opacity="0.4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-title">Schedule<span>Friday, 20 March</span></div>
+    <button class="add-btn" onclick="openSheet()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
+        <line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- DAY STRIP -->
+  <div class="day-strip">
+    <div class="day-pill" onclick="selectDay(this)">
+      <span class="day-name">Mon</span>
+      <span class="day-num">17</span>
+      <div class="day-dot"></div>
+    </div>
+    <div class="day-pill" onclick="selectDay(this)">
+      <span class="day-name">Tue</span>
+      <span class="day-num">18</span>
+      <div class="day-dot"></div>
+    </div>
+    <div class="day-pill" onclick="selectDay(this)">
+      <span class="day-name">Wed</span>
+      <span class="day-num">19</span>
+      <div class="day-dot"></div>
+    </div>
+    <div class="day-pill active" onclick="selectDay(this)">
+      <span class="day-name">Thu</span>
+      <span class="day-num">20</span>
+      <div class="day-dot"></div>
+    </div>
+    <div class="day-pill" onclick="selectDay(this)">
+      <span class="day-name">Fri</span>
+      <span class="day-num">21</span>
+    </div>
+    <div class="day-pill" onclick="selectDay(this)">
+      <span class="day-name">Sat</span>
+      <span class="day-num">22</span>
+      <div class="day-dot"></div>
+    </div>
+    <div class="day-pill" onclick="selectDay(this)">
+      <span class="day-name">Sun</span>
+      <span class="day-num">23</span>
+    </div>
+  </div>
+
+  <!-- SCROLLABLE SCHEDULE -->
+  <div class="scroll">
+    <div class="hero-card" onclick="openOverviewVideo()" style="cursor:pointer">
+      <img class="hero-image" src="1.webp" data-robot-config-image data-robot-config-src-blue="Blue%20hatted%20in%20action.jpg" alt="Memo robot operating in the kitchen">
+      <div class="hero-overlay">
+        <div class="hero-kicker">In operation</div>
+        <div class="hero-title">Memo is already moving through today&apos;s plan</div>
+        <div class="hero-copy">See what is done, what is coming next, and where there is still room to add another task.</div>
+      </div>
+    </div>
+
+    <!-- MORNING -->
+    <div class="time-block">
+      <div class="time-label">Morning</div>
+
+      <!-- Coffee — done -->
+      <div class="task-card">
+        <div class="task-row">
+          <div class="task-time-col">
+            <span class="task-time-main">7:00</span>
+            <span class="task-time-ampm">am</span>
+          </div>
+          <div class="task-divider"></div>
+          <div class="task-icon ti-coffee">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="#8B5E3C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h12v8a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V6z"/>
+              <path d="M16 8h2a2.5 2.5 0 0 1 0 5h-2"/>
+              <line x1="8" y1="2" x2="8" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/><line x1="14" y1="2" x2="14" y2="5"/>
+            </svg>
+          </div>
+          <div class="task-body">
+            <div class="task-name">Coffee</div>
+            <div class="task-meta">Every morning · 4 min</div>
+          </div>
+          <span class="status-tag st-done">
+            <svg width="9" height="8" viewBox="0 0 9 8" fill="none" stroke="#1A7A46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 3.5 6.5 8 1"/></svg>
+            Done
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTERNOON -->
+    <div class="time-block">
+      <div class="time-label">Afternoon</div>
+
+      <!-- Counter wiping — next up -->
+      <div class="task-card">
+        <div class="task-row">
+          <div class="task-time-col">
+            <span class="task-time-main">1:30</span>
+            <span class="task-time-ampm">pm</span>
+          </div>
+          <div class="task-divider"></div>
+          <div class="task-icon ti-counter">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="#6B6960" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="13" width="18" height="5" rx="2"/>
+              <path d="M5 13V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/>
+              <path d="M8 11 Q11 9 14 11"/>
+            </svg>
+          </div>
+          <div class="task-body">
+            <div class="task-name">Counter wiping</div>
+            <div class="task-meta">Weekdays · 6 min</div>
+          </div>
+          <span class="status-tag st-next">In 3h 49m</span>
+        </div>
+      </div>
+
+      <!-- Empty slot — add one -->
+      <div class="empty-slot" onclick="openSheet()">
+        <div class="empty-slot-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#9E9C94" stroke-width="1.6" stroke-linecap="round">
+            <line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/>
+          </svg>
+        </div>
+        <span class="empty-slot-text">Add afternoon task</span>
+      </div>
+    </div>
+
+    <!-- EVENING -->
+    <div class="time-block">
+      <div class="time-label">Evening</div>
+
+      <!-- Dishes -->
+      <div class="task-card">
+        <div class="task-row">
+          <div class="task-time-col">
+            <span class="task-time-main">7:30</span>
+            <span class="task-time-ampm">pm</span>
+          </div>
+          <div class="task-divider"></div>
+          <div class="task-icon ti-dishes">
+            <svg width="22" height="20" viewBox="0 0 24 22" fill="none" stroke="#D4631A" stroke-width="1.7" stroke-linecap="round">
+              <ellipse cx="12" cy="13" rx="10" ry="7"/><ellipse cx="12" cy="12" rx="5.5" ry="4"/>
+              <line x1="7" y1="5.5" x2="6" y2="3"/><line x1="12" y1="4.5" x2="12" y2="2"/><line x1="17" y1="5.5" x2="18" y2="3"/>
+            </svg>
+          </div>
+          <div class="task-body">
+            <div class="task-name">Dishes</div>
+            <div class="task-meta">Weekdays after dinner · 11 min</div>
+          </div>
+          <span class="status-tag st-later">In 9h 49m</span>
+        </div>
+      </div>
+
+      <!-- Laundry -->
+      <div class="task-card">
+        <div class="task-row">
+          <div class="task-time-col">
+            <span class="task-time-main">9:00</span>
+            <span class="task-time-ampm">pm</span>
+          </div>
+          <div class="task-divider"></div>
+          <div class="task-icon ti-laundry">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="#3A5FA0" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="18" height="19" rx="3"/>
+              <circle cx="11" cy="13" r="4.5"/><circle cx="11" cy="13" r="1.8" fill="#3A5FA0" stroke="none"/>
+              <circle cx="6" cy="7" r="1.2" fill="#3A5FA0" stroke="none"/>
+            </svg>
+          </div>
+          <div class="task-body">
+            <div class="task-name">Laundry</div>
+            <div class="task-meta">Tue &amp; Thu · 15 min</div>
+          </div>
+          <div class="task-toggle on" onclick="toggleTask(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPCOMING SUMMARY -->
+    <div style="margin: 8px 0 6px; padding: 0 2px;">
+      <div class="time-label">This week</div>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:13px;color:var(--muted);min-width:30px">Fri</div>
+          <div style="font-size:13px;font-weight:500;color:var(--ink)">Coffee · Counter wiping · Dishes</div>
+        </div>
+        <div style="font-size:11px;color:var(--faint)">3 tasks</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:13px;color:var(--muted);min-width:30px">Sat</div>
+          <div style="font-size:13px;font-weight:500;color:var(--ink)">Coffee</div>
+        </div>
+        <div style="font-size:11px;color:var(--faint)">1 task</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:13px;color:var(--muted);min-width:30px">Sun</div>
+          <div style="font-size:13px;font-weight:400;color:var(--faint);font-style:italic">No tasks scheduled</div>
+        </div>
+        <div style="font-size:11px;color:var(--border);">—</div>
+      </div>
+    </div>
+
+  </div><!-- end scroll -->
+
+  <!-- ADD TASK SHEET -->
+  <div class="overlay" id="overlay" onclick="closeSheet(event)">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-scroll">
+        <div class="sheet-header">
+          <span class="sheet-title">Add task</span>
+          <button class="sheet-close" onclick="closeSheetDirect()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#6B6960" stroke-width="1.8" stroke-linecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+          </button>
+        </div>
+
+        <div class="sheet-section">
+          <div class="sheet-sec-label">Skill</div>
+          <div class="skill-picker">
+            <div class="sp-tile selected" onclick="selectSkill(this)">
+              <div class="sp-icon ti-dishes"><svg width="18" height="16" viewBox="0 0 24 22" fill="none" stroke="#D4631A" stroke-width="1.7" stroke-linecap="round"><ellipse cx="12" cy="13" rx="10" ry="7"/><ellipse cx="12" cy="12" rx="5.5" ry="4"/></svg></div>
+              <span class="sp-name">Dishes</span>
+            </div>
+            <div class="sp-tile" onclick="selectSkill(this)">
+              <div class="sp-icon ti-coffee"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#8B5E3C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12v8a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V6z"/><path d="M16 8h2a2.5 2.5 0 0 1 0 5h-2"/></svg></div>
+              <span class="sp-name">Coffee</span>
+            </div>
+            <div class="sp-tile" onclick="selectSkill(this)">
+              <div class="sp-icon ti-laundry"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#3A5FA0" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="18" height="19" rx="3"/><circle cx="11" cy="13" r="4.5"/></svg></div>
+              <span class="sp-name">Laundry</span>
+            </div>
+            <div class="sp-tile" onclick="selectSkill(this)">
+              <div class="sp-icon ti-counter"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#6B6960" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="13" width="18" height="5" rx="2"/><path d="M5 13V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/></svg></div>
+              <span class="sp-name">Counter</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet-section">
+          <div class="sheet-sec-label">Day</div>
+          <div class="time-picker" data-chip-group="day">
+            <button class="tp-chip selected" onclick="selectChip(this,'day')">Today</button>
+            <button class="tp-chip" onclick="selectChip(this,'day')">Tomorrow</button>
+            <button class="tp-chip" onclick="selectChip(this,'day')">Saturday</button>
+            <button class="tp-chip" onclick="selectChip(this,'day')">Sunday</button>
+          </div>
+          <div class="sheet-note">Choose a specific day here for a one-off task, then use repeat below only if the job should come back automatically.</div>
+        </div>
+
+        <div class="sheet-section">
+          <div class="sheet-sec-label">Time</div>
+          <div class="time-picker" data-chip-group="time">
+            <button class="tp-chip" onclick="selectChip(this,'time')">7:00 am</button>
+            <button class="tp-chip selected" onclick="selectChip(this,'time')">8:00 am</button>
+            <button class="tp-chip" onclick="selectChip(this,'time')">12:00 pm</button>
+            <button class="tp-chip" onclick="selectChip(this,'time')">6:00 pm</button>
+            <button class="tp-chip" onclick="selectChip(this,'time')">7:30 pm</button>
+            <button class="tp-chip" onclick="selectChip(this,'time')">9:00 pm</button>
+            <button class="tp-chip" onclick="selectChip(this,'time')">Custom…</button>
+          </div>
+        </div>
+
+        <div class="sheet-section">
+          <div class="sheet-sec-label">Repeat</div>
+          <div class="repeat-picker">
+            <div class="rp-row selected" onclick="selectRepeat(this)">
+              <span class="rp-label">Every day</span>
+              <div class="rp-check">
+                <svg width="8" height="7" viewBox="0 0 8 7" fill="none" stroke="#1C1B19" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 3.5 3 5.5 7 1"/></svg>
+              </div>
+            </div>
+            <div class="rp-row" onclick="selectRepeat(this)">
+              <span class="rp-label">Weekdays only</span>
+              <div class="rp-check"></div>
+            </div>
+            <div class="rp-row" onclick="selectRepeat(this)">
+              <span class="rp-label">Weekends only</span>
+              <div class="rp-check"></div>
+            </div>
+            <div class="rp-row" onclick="selectRepeat(this)">
+              <span class="rp-label">Just today</span>
+              <div class="rp-check"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="confirm-btn" onclick="confirmAdd()">Add to schedule</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overview-overlay" id="overview-overlay" onclick="closeOverview(event)">
+    <div class="overview-sheet">
+      <div class="overview-handle"></div>
+      <div class="overview-header">
+        <div>
+          <div class="overview-title">Today&apos;s task overview</div>
+          <div class="overview-sub">A playback-style recap of what Memo already finished and what it is doing next.</div>
+        </div>
+        <button class="overview-close" onclick="closeOverview()" aria-label="Close task overview">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#6B6960" stroke-width="1.8" stroke-linecap="round">
+            <line x1="1" y1="1" x2="11" y2="11"/>
+            <line x1="11" y1="1" x2="1" y2="11"/>
+          </svg>
+        </button>
+      </div>
+      <div class="overview-scroll">
+        <div class="overview-stage">
+          <div class="overview-grid"></div>
+          <div class="overview-badge"><div class="overview-dot"></div><span>Playback</span></div>
+          <div class="overview-clock" id="overview-clock">7:00 am</div>
+          <div class="overview-caption">
+            <div class="overview-caption-title" id="overview-title">Coffee prep complete</div>
+            <div class="overview-caption-copy" id="overview-copy">Memo locked the portafilter, pulled an espresso shot, and cleared the station before leaving.</div>
+          </div>
+          <div class="overview-room" id="overview-room">Kitchen station</div>
+          <img class="overview-robot" src="Untitled%20design(11).png" data-robot-config-image data-robot-config-src-blue="Blue%20large.png" alt="Memo overview playback">
+        </div>
+        <div class="overview-progress">
+          <div class="overview-progress-fill" id="overview-progress-fill"></div>
+        </div>
+        <div class="overview-events">
+          <div class="overview-event active" id="overview-event-0">
+            <div class="overview-event-time">7:00 am</div>
+            <div class="overview-event-title">Coffee finished</div>
+            <div class="overview-event-copy">Espresso served and the coffee station left clear.</div>
+          </div>
+          <div class="overview-event" id="overview-event-1">
+            <div class="overview-event-time">1:30 pm</div>
+            <div class="overview-event-title">Counter wipe complete</div>
+            <div class="overview-event-copy">A full left-to-right wipe left the kitchen surface ready for dinner prep.</div>
+          </div>
+          <div class="overview-event" id="overview-event-2">
+            <div class="overview-event-time">7:30 pm</div>
+            <div class="overview-event-title">Dishwasher loading in progress</div>
+            <div class="overview-event-copy">Memo is moving through cutlery and plates before the evening cycle starts.</div>
+          </div>
+        </div>
+        <button class="confirm-btn" id="overview-toggle" onclick="toggleOverviewPlayback()">Pause overview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="n-item">
+      <svg width="22" height="20" viewBox="0 0 22 20" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8.5L11 1l10 7.5V19a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V8.5z"/><path d="M8 20v-8h6v8"/></svg>
+      <span class="n-lbl">Home</span>
+    </div>
+    <div class="n-item">
+      <svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 1L1 13h9l-1 8 10-12h-9l1-8z"/></svg>
+      <span class="n-lbl">Skills</span>
+    </div>
+    <div class="n-item">
+      <svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#1C1B19" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="18" height="18" rx="3"/><line x1="14" y1="1" x2="14" y2="5"/><line x1="6" y1="1" x2="6" y2="5"/><line x1="1" y1="9" x2="19" y2="9"/></svg>
+      <span class="n-lbl on">Schedule</span>
+      <div class="n-pip"></div>
+    </div>
+    <div class="n-item">
+      <svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5l6-4 6 4 6-4v16l-6 4-6-4-6 4V5z"/><line x1="7" y1="1" x2="7" y2="17"/><line x1="13" y1="5" x2="13" y2="21"/></svg>
+      <span class="n-lbl">Map</span>
+    </div>
+    <div class="n-item">
+      <svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round"><line x1="4" y1="22" x2="4" y2="14"/><line x1="9" y1="22" x2="9" y2="6"/><line x1="14" y1="22" x2="14" y2="10"/><line x1="19" y1="22" x2="19" y2="2"/></svg>
+      <span class="n-lbl">Activity</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function selectDay(el) {
+  document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleTask(el) {
+  el.classList.toggle('on');
+}
+
+const overviewFrames = [
+  {
+    pct: 18,
+    time: '7:00 am',
+    title: 'Coffee prep complete',
+    copy: 'Memo locked the portafilter, pulled an espresso shot, and cleared the station before leaving.',
+    room: 'Kitchen station'
+  },
+  {
+    pct: 56,
+    time: '1:30 pm',
+    title: 'Counter wipe complete',
+    copy: 'The kitchen counter was wiped left to right and the cloth returned to its holder.',
+    room: 'Kitchen counter'
+  },
+  {
+    pct: 92,
+    time: '7:30 pm',
+    title: 'Dishwasher loading in progress',
+    copy: 'Memo is moving through plates and cutlery before the evening cycle starts.',
+    room: 'Kitchen sink'
+  }
+];
+
+let overviewPos = 0;
+let overviewPlaying = false;
+let overviewTimer = null;
+
+function getSelectedSkill() {
+  const selected = document.querySelector('.skill-picker .sp-tile.selected .sp-name');
+  return selected ? selected.textContent.trim() : 'Dishes';
+}
+
+function getSelectedChip(group) {
+  const selected = document.querySelector(`[data-chip-group="${group}"] .tp-chip.selected`);
+  return selected ? selected.textContent.trim() : '';
+}
+
+function updateConfirmButton() {
+  const skill = getSelectedSkill();
+  const day = getSelectedChip('day') || 'Today';
+  const time = getSelectedChip('time') || '8:00 am';
+  document.querySelector('.confirm-btn').textContent = `Add ${skill} for ${day} at ${time}`;
+}
+
+function setSelectedSkillByName(name) {
+  document.querySelectorAll('.skill-picker .sp-tile').forEach((tile) => {
+    tile.classList.toggle('selected', tile.querySelector('.sp-name').textContent.trim() === name);
+  });
+}
+
+function setSelectedChipByText(group, value) {
+  const chips = document.querySelectorAll(`[data-chip-group="${group}"] .tp-chip`);
+  chips.forEach((chip) => {
+    chip.classList.toggle('selected', chip.textContent.trim().toLowerCase() === value.toLowerCase());
+  });
+}
+
+function openSheet(skillName, dayLabel) {
+  document.getElementById('overlay').classList.add('open');
+  if (skillName) setSelectedSkillByName(skillName);
+  if (dayLabel) setSelectedChipByText('day', dayLabel);
+  updateConfirmButton();
+}
+function closeSheet(e) {
+  if (e.target === document.getElementById('overlay')) closeSheetDirect();
+}
+function closeSheetDirect() {
+  document.getElementById('overlay').classList.remove('open');
+}
+function confirmAdd() {
+  closeSheetDirect();
+}
+
+function selectSkill(el) {
+  el.closest('.skill-picker').querySelectorAll('.sp-tile').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  updateConfirmButton();
+}
+function selectChip(el, group) {
+  const picker = el.closest('[data-chip-group]') || el.closest('.time-picker');
+  picker.querySelectorAll('.tp-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  updateConfirmButton();
+}
+function selectRepeat(el) {
+  el.closest('.repeat-picker').querySelectorAll('.rp-row').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+  const check = el.querySelector('.rp-check');
+  check.innerHTML = `<svg width="8" height="7" viewBox="0 0 8 7" fill="none" stroke="#1C1B19" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 3.5 3 5.5 7 1"/></svg>`;
+  el.closest('.repeat-picker').querySelectorAll('.rp-row:not(.selected) .rp-check').forEach(c => c.innerHTML = '');
+}
+
+function applyOverviewState() {
+  document.getElementById('overview-progress-fill').style.width = overviewPos + '%';
+  let frameIndex = 0;
+  overviewFrames.forEach((frame, index) => {
+    if (overviewPos >= frame.pct) frameIndex = index;
+  });
+  const frame = overviewFrames[frameIndex];
+  document.getElementById('overview-clock').textContent = frame.time;
+  document.getElementById('overview-title').textContent = frame.title;
+  document.getElementById('overview-copy').textContent = frame.copy;
+  document.getElementById('overview-room').textContent = frame.room;
+  document.querySelectorAll('.overview-event').forEach((node, index) => {
+    node.classList.toggle('active', index === frameIndex);
+  });
+}
+
+function stopOverview() {
+  overviewPlaying = false;
+  clearInterval(overviewTimer);
+  document.getElementById('overview-toggle').textContent = overviewPos >= 100 ? 'Replay overview' : 'Play overview';
+}
+
+function startOverview() {
+  if (overviewPlaying) return;
+  if (overviewPos >= 100) overviewPos = 0;
+  overviewPlaying = true;
+  document.getElementById('overview-toggle').textContent = 'Pause overview';
+  overviewTimer = setInterval(() => {
+    overviewPos = Math.min(overviewPos + 1.8, 100);
+    applyOverviewState();
+    if (overviewPos >= 100) stopOverview();
+  }, 110);
+}
+
+function toggleOverviewPlayback() {
+  if (overviewPlaying) {
+    stopOverview();
+    return;
+  }
+  startOverview();
+}
+
+function openOverviewVideo() {
+  document.getElementById('overview-overlay').classList.add('open');
+  overviewPos = 0;
+  applyOverviewState();
+  startOverview();
+}
+
+function closeOverview(event) {
+  if (!event || event.target === document.getElementById('overview-overlay')) {
+    document.getElementById('overview-overlay').classList.remove('open');
+    stopOverview();
+  }
+}
+
+updateConfirmButton();
+applyOverviewState();
+
+const scheduleParams = new URLSearchParams(window.location.search);
+if (scheduleParams.get('openAdd') === '1') {
+  openSheet(scheduleParams.get('skill') || 'Dishes', scheduleParams.get('day') || 'Today');
+  history.replaceState(null, '', withRobotConfig('memo-schedule.html'));
+}
+</script>
+
+<script>
+(function () {
+  const routes = {
+    Home: 'memo-dashboard-v5.html',
+    Skills: 'memo-skills-v3.html',
+    Schedule: 'memo-schedule.html',
+    Map: 'memo-map.html',
+    Activity: 'memo-activity.html'
+  };
+
+  document.querySelectorAll('.bottom-nav .n-item').forEach((item) => {
+    const label = item.querySelector('.n-lbl');
+    if (!label) return;
+    const href = routes[label.textContent.trim()];
+    if (!href) return;
+    const go = () => { navigateWithConfig(href); };
+    item.setAttribute('role', 'link');
+    item.tabIndex = 0;
+    item.addEventListener('click', go);
+    item.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        go();
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

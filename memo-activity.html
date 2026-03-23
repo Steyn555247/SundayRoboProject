@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Memo — Activity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black:   #111110;
+  --ink:     #1C1B19;
+  --muted:   #6B6960;
+  --faint:   #9E9C94;
+  --border:  #E2DFD8;
+  --surface: #F4F2ED;
+  --white:   #FFFFFF;
+  --yellow:  #F5E100;
+  --orange:  #E85D24;
+  --robot-accent: var(--orange);
+  --robot-accent-rgb: 232, 93, 36;
+  --robot-accent-soft: #FBF0ED;
+  --robot-accent-border: #F0C4B0;
+  --robot-accent-line: rgba(var(--robot-accent-rgb), 0.22);
+  --robot-accent-glow: rgba(var(--robot-accent-rgb), 0.18);
+  --green:   #1A7A46;
+  --green-bg:#EBF5EF;
+  --amber:   #B45309;
+  --amber-bg:#FEF3C7;
+  --purple:  #6D28D9;
+  --purple-bg:#EDE9FE;
+  --red:     #C13A1A;
+  --red-bg:  #FBF0ED;
+}
+:root[data-robot-config="green"] {
+  --robot-accent: #2F8A5A;
+  --robot-accent-rgb: 47, 138, 90;
+  --robot-accent-soft: #EAF5EE;
+  --robot-accent-border: #B9DAC7;
+  --robot-accent-line: rgba(var(--robot-accent-rgb), 0.22);
+  --robot-accent-glow: rgba(var(--robot-accent-rgb), 0.18);
+}
+body {
+  font-family: 'Geist', -apple-system, sans-serif;
+  background: #E8E5DF;
+  display: flex; justify-content: center;
+  padding: 40px 0 60px; min-height: 100vh;
+}
+.recording-brand {
+  position: fixed;
+  top: 28px;
+  left: 30px;
+  z-index: 220;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.recording-logo-wrap {
+  position: relative;
+  padding: 0;
+}
+.recording-logo {
+  width: 208px;
+  height: auto;
+  display: block;
+  opacity: 0.96;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.08));
+}
+.recording-tag {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.recording-tag::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: rgba(28,27,25,0.28);
+}
+.recording-credit {
+  position: fixed;
+  right: 34px;
+  bottom: 30px;
+  z-index: 220;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  text-align: right;
+}
+.recording-credit-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.recording-credit-name {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 0.96;
+  letter-spacing: -1.4px;
+  color: var(--ink);
+  text-shadow: 0 10px 24px rgba(255,255,255,0.5);
+}
+@media (max-width: 880px) {
+  body {
+    padding-top: 98px;
+    padding-bottom: 82px;
+  }
+  .recording-brand {
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+  }
+  .recording-logo-wrap {
+    padding: 0;
+  }
+  .recording-logo {
+    width: 172px;
+  }
+  .recording-tag {
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    justify-content: center;
+  }
+  .recording-tag::before {
+    width: 18px;
+  }
+  .recording-credit {
+    left: 50%;
+    right: auto;
+    bottom: 14px;
+    transform: translateX(-50%);
+    align-items: center;
+    text-align: center;
+  }
+  .recording-credit-name {
+    font-size: 24px;
+    letter-spacing: -1px;
+  }
+}
+.phone {
+  width: 393px; background: var(--surface); border-radius: 52px;
+  overflow: hidden; position: relative;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.07);
+  display: flex; flex-direction: column; height: 852px;
+}
+
+/* STATUS BAR */
+.sb { flex-shrink:0; padding:16px 28px 0; display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:500; color:var(--ink); }
+.sb-r { display:flex; align-items:center; gap:6px; }
+
+/* NAV */
+.nav { flex-shrink:0; padding:14px 24px 12px; display:flex; justify-content:space-between; align-items:center; }
+.nav-title { font-size:26px; font-weight:600; color:var(--ink); letter-spacing:-0.8px; line-height:1; }
+.nav-title span { font-size:13px; font-weight:400; color:var(--faint); display:block; margin-top:3px; letter-spacing:-0.1px; }
+
+/* FILTER PILLS */
+.filters { flex-shrink:0; padding:0 16px 14px; display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; }
+.filters::-webkit-scrollbar { display:none; }
+.pill {
+  height:32px; padding:0 14px; border-radius:16px;
+  border:1px solid var(--border); background:var(--white);
+  font-family:inherit; font-size:13px; color:var(--muted);
+  cursor:pointer; white-space:nowrap; transition:all 0.14s;
+  display:flex; align-items:center;
+}
+.pill.active {
+  background:var(--robot-accent-soft);
+  border-color:var(--robot-accent-border);
+  color:var(--robot-accent);
+  font-weight:600;
+  box-shadow:0 8px 18px rgba(var(--robot-accent-rgb), 0.08);
+}
+
+/* HERO */
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 220px;
+  margin: 0 16px 14px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--black);
+}
+.hero-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 78% 22%, rgba(var(--robot-accent-rgb), 0.2) 0%, rgba(var(--robot-accent-rgb), 0.06) 28%, rgba(var(--robot-accent-rgb), 0) 58%);
+  pointer-events: none;
+  z-index: 1;
+}
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(17,17,16,0.04) 12%, rgba(17,17,16,0.74) 100%);
+  z-index: 2;
+}
+.hero-kicker {
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(var(--robot-accent-rgb), 0.16);
+  border: 1px solid rgba(var(--robot-accent-rgb), 0.28);
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255,244,239,0.92);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.hero-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -0.7px;
+  line-height: 1.05;
+  max-width: 230px;
+}
+.hero-copy {
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.45;
+  max-width: 250px;
+}
+
+/* SCROLL */
+.scroll { flex:1; overflow-y:auto; padding:0 16px 16px; scrollbar-width:none; }
+.scroll::-webkit-scrollbar { display:none; }
+
+/* DATE GROUP HEADER */
+.date-group { margin-bottom:6px; }
+.date-label {
+  font-size:11px; font-weight:500; color:var(--faint);
+  text-transform:uppercase; letter-spacing:0.06em;
+  padding:4px 2px 10px;
+}
+
+/* ACTIVITY CARD */
+.act-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:18px; margin-bottom:8px;
+  overflow:hidden; cursor:pointer; transition:background 0.12s;
+}
+.act-card:hover { background:#FAFAF7; border-color:var(--robot-accent-border); }
+
+/* card accent bar */
+.act-card.type-task   { border-left:3px solid var(--green); }
+.act-card.type-alert  { border-left:3px solid var(--orange); }
+.act-card.type-unlock { border-left:3px solid var(--purple); }
+.act-card.type-warn   { border-left:3px solid var(--amber); }
+
+.act-main-row {
+  padding:14px 16px;
+  display:flex; align-items:flex-start; gap:12px;
+}
+.act-icon {
+  width:40px; height:40px; border-radius:12px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; margin-top:1px;
+}
+.ai-task   { background:var(--green-bg); }
+.ai-alert  { background:var(--red-bg); }
+.ai-unlock { background:var(--purple-bg); }
+.ai-warn   { background:var(--amber-bg); }
+.ai-info   { background:var(--surface); }
+
+.act-body { flex:1; min-width:0; }
+.act-title { font-size:14px; font-weight:500; color:var(--ink); letter-spacing:-0.2px; line-height:1.35; margin-bottom:3px; }
+.act-sub   { font-size:12px; color:var(--muted); line-height:1.4; }
+.act-meta  { font-size:11px; color:var(--faint); margin-top:4px; display:flex; align-items:center; gap:6px; }
+.act-meta-dot { width:3px; height:3px; border-radius:50%; background:var(--border); }
+
+.act-badge {
+  font-size:11px; font-weight:500; padding:3px 9px; border-radius:10px;
+  white-space:nowrap; flex-shrink:0; margin-top:1px;
+}
+.ab-ok     { background:var(--green-bg); color:var(--green); }
+.ab-alert  { background:var(--red-bg); color:var(--red); }
+.ab-unlock { background:var(--purple-bg); color:var(--purple); }
+.ab-warn   { background:var(--amber-bg); color:var(--amber); }
+
+/* EXPANDED CARD — action needed */
+.act-action {
+  border-top:1px solid var(--border);
+  padding:12px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+}
+.act-action-text { font-size:12px; color:var(--muted); flex:1; line-height:1.45; }
+.act-action-btn {
+  height:34px; padding:0 14px;
+  background:var(--ink); border:none; border-radius:17px;
+  font-family:inherit; font-size:12px; font-weight:500; color:var(--white);
+  cursor:pointer; white-space:nowrap; flex-shrink:0;
+  transition:opacity 0.14s;
+}
+.act-action-btn:hover { opacity:0.8; }
+.act-action-btn.secondary {
+  background:var(--surface); color:var(--ink);
+  border:1px solid var(--border);
+}
+
+/* STATS BAR at top */
+.stats-bar {
+  flex-shrink:0; margin:0 16px 14px;
+  background:var(--black); border-radius:18px;
+  padding:16px 20px;
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:0;
+}
+.stat-item { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.stat-item:not(:last-child) { border-right:1px solid rgba(255,255,255,0.08); }
+.stat-val { font-size:22px; font-weight:600; color:var(--white); letter-spacing:-0.5px; line-height:1; }
+.stat-lbl { font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.06em; }
+
+/* ── HOW TO FIX OVERLAY ── */
+.fix-overlay {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0.48);
+  display:none; align-items:flex-end;
+  z-index:30; border-radius:52px; overflow:hidden;
+}
+.fix-overlay.open { display:flex; }
+.fix-sheet {
+  width:100%; background:var(--white);
+  border-radius:28px 28px 0 0;
+  animation:slideup 0.3s cubic-bezier(0.32,0.72,0,1);
+  display:flex; flex-direction:column; max-height:90%;
+  overflow:hidden;
+}
+@keyframes slideup { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.fix-handle { width:36px; height:4px; border-radius:2px; background:var(--border); margin:12px auto 0; flex-shrink:0; }
+.fix-header { padding:18px 20px 0; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
+.fix-title-row { display:flex; align-items:center; gap:10px; }
+.fix-alert-icon { width:36px; height:36px; border-radius:11px; background:var(--red-bg); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.fix-title { font-size:17px; font-weight:600; color:var(--ink); letter-spacing:-0.4px; }
+.fix-close { width:30px; height:30px; border-radius:50%; background:var(--surface); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.fix-scroll { overflow-y:auto; flex:1; padding:0 20px 32px; scrollbar-width:none; }
+.fix-scroll::-webkit-scrollbar { display:none; }
+.fix-desc { font-size:13px; color:var(--muted); line-height:1.6; margin:14px 0 20px; }
+.sensor-diagram { background:#0A0A09; border-radius:18px; padding:20px 20px 16px; margin-bottom:20px; position:relative; overflow:hidden; }
+.sensor-diagram-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size:24px 24px; pointer-events:none; }
+.fix-steps { display:flex; flex-direction:column; gap:14px; margin-bottom:20px; }
+.fix-step { display:flex; gap:14px; align-items:flex-start; }
+.fix-step-num { width:26px; height:26px; border-radius:50%; flex-shrink:0; background:var(--surface); border:1px solid var(--border); font-size:12px; font-weight:500; color:var(--muted); display:flex; align-items:center; justify-content:center; margin-top:1px; transition:background 0.2s, color 0.2s, border-color 0.2s; }
+.fix-step-num.done { background:var(--green); color:var(--white); border-color:var(--green); }
+.fix-step-body { flex:1; }
+.fix-step-title { font-size:14px; font-weight:500; color:var(--ink); letter-spacing:-0.2px; margin-bottom:3px; }
+.fix-step-sub { font-size:12px; color:var(--muted); line-height:1.5; }
+.fix-step-visual { margin-top:10px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+.fix-step-visual-text { font-size:12px; color:var(--muted); line-height:1.4; }
+.fix-warning { background:var(--amber-bg); border-radius:14px; padding:13px 15px; margin-bottom:20px; display:flex; gap:10px; align-items:flex-start; }
+.fix-warning-text { font-size:12px; color:var(--amber); line-height:1.5; }
+.fix-done-btn { width:100%; height:48px; border-radius:24px; background:var(--yellow); border:none; font-family:inherit; font-size:15px; font-weight:500; color:var(--ink); cursor:pointer; flex-shrink:0; transition:opacity 0.14s, transform 0.1s; }
+.fix-done-btn:hover { opacity:0.88; }
+.fix-done-btn:active { transform:scale(0.97); }
+
+/* ── RECORDING PLAYER ── */
+.rec-feed {
+  width:100%; height:170px;
+  background:#0A0A09; position:relative; overflow:hidden;
+}
+.rec-grid {
+  position:absolute; inset:0;
+  background-image: linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px), linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
+  background-size:26px 26px; pointer-events:none;
+}
+.rec-scanline {
+  position:absolute; left:0; right:0; height:1px;
+  background:rgba(255,255,255,0.04);
+  animation:recscan 2.8s linear infinite;
+}
+@keyframes recscan { 0%{top:0;opacity:0} 5%{opacity:1} 95%{opacity:1} 100%{top:100%;opacity:0} }
+.rec-scene { position:absolute; inset:0; }
+.sock-blob { position:absolute; border-radius:6px; }
+.rec-live-badge {
+  position:absolute; top:10px; left:12px;
+  display:flex; align-items:center; gap:5px;
+  background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px; padding:4px 9px; z-index:4;
+}
+.rec-rec-dot { width:6px; height:6px; border-radius:50%; background:#E85D24; }
+.rec-live-text { font-size:10px; color:rgba(255,255,255,0.8); font-weight:500; letter-spacing:0.05em; }
+.rec-ts {
+  position:absolute; top:10px; right:12px;
+  background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px; padding:4px 9px;
+  font-size:10px; color:rgba(255,255,255,0.55);
+  font-variant-numeric:tabular-nums; z-index:4;
+}
+.rec-room {
+  position:absolute; bottom:10px; left:12px;
+  background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px; padding:4px 9px;
+  font-size:10px; color:rgba(255,255,255,0.5); z-index:4;
+}
+.rec-moment-flag {
+  position:absolute; z-index:7;
+  display:flex; flex-direction:column; align-items:center;
+  bottom:44px; left:50%; transform:translateX(-50%);
+  animation:flagpop 0.25s ease;
+}
+@keyframes flagpop { from{opacity:0;transform:translateX(-50%) translateY(6px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+.rec-flag-pill {
+  background:#E85D24; color:white;
+  font-size:10px; font-weight:500; padding:4px 10px; border-radius:8px;
+  white-space:nowrap; letter-spacing:0.02em;
+}
+.rec-flag-tail {
+  width:0; height:0;
+  border-left:5px solid transparent; border-right:5px solid transparent;
+  border-top:6px solid #E85D24;
+}
+
+/* Timeline scrubber */
+.rec-timeline { padding:10px 14px 4px; }
+.rec-tl-track {
+  height:4px; background:rgba(28,27,25,0.1);
+  border-radius:2px; position:relative; cursor:pointer;
+  margin-bottom:6px;
+}
+.rec-tl-fill { height:100%; border-radius:2px; background:var(--ink); width:72%; transition:width 0.3s ease; }
+.rec-tl-marker {
+  position:absolute; top:-4px;
+  width:3px; height:12px; background:#E85D24; border-radius:1.5px;
+  transform:translateX(-50%);
+}
+.rec-tl-thumb {
+  position:absolute; top:-5px; left:72%;
+  width:14px; height:14px; border-radius:50%;
+  background:var(--ink); border:2px solid var(--white);
+  box-shadow:0 1px 4px rgba(0,0,0,0.2);
+  transform:translateX(-50%); transition:left 0.3s ease;
+}
+.rec-tl-labels { display:flex; justify-content:space-between; font-size:10px; color:var(--faint); }
+
+/* Playback log */
+.rec-log { padding:6px 14px 4px; display:flex; flex-direction:column; gap:0; max-height:100px; overflow-y:auto; scrollbar-width:none; }
+.rec-log::-webkit-scrollbar { display:none; }
+.rec-log-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid rgba(28,27,25,0.06); }
+.rec-log-row:last-child { border-bottom:none; }
+.rec-log-ts { font-size:10px; color:var(--faint); min-width:28px; font-variant-numeric:tabular-nums; }
+.rec-log-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.rec-log-text { font-size:12px; color:var(--muted); line-height:1.3; }
+.rec-log-text-warn { color:var(--orange); font-weight:500; }
+
+/* Buttons */
+.rec-jump-btn {
+  flex:1; height:34px; border-radius:17px;
+  background:var(--amber-bg); border:1px solid #FDE68A;
+  font-family:inherit; font-size:12px; font-weight:500; color:var(--amber);
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+  transition:background 0.14s;
+}
+.rec-jump-btn:hover { background:#FDE68A; }
+.rec-dismiss-btn {
+  height:34px; padding:0 14px; border-radius:17px;
+  background:var(--surface); border:1px solid var(--border);
+  font-family:inherit; font-size:12px; color:var(--muted);
+  cursor:pointer; transition:background 0.14s;
+}
+.rec-dismiss-btn:hover { background:var(--border); }
+
+.live-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.48);
+  display: none;
+  align-items: flex-end;
+  z-index: 32;
+  border-radius: 52px;
+  overflow: hidden;
+}
+.live-overlay.open { display: flex; }
+.live-sheet {
+  width: 100%;
+  background: var(--white);
+  border-radius: 28px 28px 0 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 88%;
+  overflow: hidden;
+  animation: slideup 0.3s cubic-bezier(0.32,0.72,0,1);
+}
+.live-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 12px auto 0; flex-shrink: 0; }
+.live-header {
+  padding: 18px 20px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+.live-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+.live-sub {
+  font-size: 12px;
+  color: var(--faint);
+  line-height: 1.45;
+  margin-top: 4px;
+}
+.live-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.live-scroll {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 20px 30px;
+  scrollbar-width: none;
+}
+.live-scroll::-webkit-scrollbar { display: none; }
+.live-stage {
+  position: relative;
+  margin-top: 14px;
+  height: 200px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #0A0A09;
+}
+.live-stage-image {
+  display: none;
+}
+.live-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.live-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255,255,255,0.04);
+  animation: recscan 2.5s linear infinite;
+}
+.live-pill,
+.live-clock,
+.live-room {
+  position: absolute;
+  z-index: 2;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 4px 9px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.76);
+}
+.live-pill {
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.live-rec {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--robot-accent);
+  animation: liveblink 1s ease-in-out infinite;
+}
+.live-caption,
+.live-clock { top: 12px; right: 12px; }
+.live-room { bottom: 12px; left: 12px; }
+.live-caption,
+.live-robot,
+.live-box,
+.live-box-label { display: none; }
+.live-focus {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 70px;
+  height: 60px;
+  z-index: 1;
+}
+.lf-tl,
+.lf-tr,
+.lf-bl,
+.lf-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+}
+.lf-tl { top:0; left:0; border-top:1.5px solid rgba(245,225,0,0.75); border-left:1.5px solid rgba(245,225,0,0.75); border-radius:3px 0 0 0; }
+.lf-tr { top:0; right:0; border-top:1.5px solid rgba(245,225,0,0.75); border-right:1.5px solid rgba(245,225,0,0.75); border-radius:0 3px 0 0; }
+.lf-bl { bottom:0; left:0; border-bottom:1.5px solid rgba(245,225,0,0.75); border-left:1.5px solid rgba(245,225,0,0.75); border-radius:0 0 0 3px; }
+.lf-br { bottom:0; right:0; border-bottom:1.5px solid rgba(245,225,0,0.75); border-right:1.5px solid rgba(245,225,0,0.75); border-radius:0 0 3px 0; }
+.live-depth-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70px;
+  background: linear-gradient(to top, rgba(255,255,255,0.04), transparent);
+}
+.live-depth-left,
+.live-depth-mid,
+.live-depth-right {
+  position: absolute;
+  bottom: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+}
+.live-depth-left {
+  left: 18px;
+  width: 50px;
+  height: 36px;
+}
+.live-depth-mid {
+  left: 80px;
+  width: 30px;
+  height: 48px;
+  background: rgba(255,255,255,0.03);
+}
+.live-depth-right {
+  right: 30px;
+  width: 68px;
+  height: 58px;
+}
+@keyframes liveblink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.live-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+.live-metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 13px;
+}
+.live-metric-label {
+  font-size: 10px;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.live-metric-value {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+  margin-top: 8px;
+}
+.live-events {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.live-event {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 14px 15px;
+}
+.live-event-time {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.live-event-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-top: 6px;
+  letter-spacing: -0.2px;
+}
+.live-event-copy {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 4px;
+}
+.live-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.live-action-btn {
+  flex: 1;
+  height: 46px;
+  border-radius: 23px;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.live-action-btn.primary {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.live-action-btn.secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--ink);
+}
+
+/* BOTTOM NAV */
+.bottom-nav { flex-shrink:0; background:var(--white); border-top:1px solid var(--border); padding:12px 4px 34px; display:flex; justify-content:space-around; }
+.n-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 10px; border-radius:10px; cursor:pointer; min-width:54px; transition:background 0.12s; }
+.n-item:hover { background:var(--surface); }
+.n-lbl { font-size:10px; color:var(--faint); }
+.n-lbl.on { color:var(--ink); font-weight:500; }
+.n-pip { width:4px; height:4px; border-radius:2px; background:var(--yellow); margin-top:1px; }
+</style>
+<script src="robot-config-preview.js"></script>
+</head>
+<body>
+<div class="recording-brand" aria-hidden="true">
+  <div class="recording-logo-wrap">
+    <img class="recording-logo" src="Untitled%20design(12).png" alt="Sunday Robotics">
+  </div>
+  <div class="recording-tag">Full app interface</div>
+</div>
+<div class="recording-credit" aria-hidden="true">
+  <span class="recording-credit-kicker">Made by</span>
+  <span class="recording-credit-name">Steyn Knollema</span>
+</div>
+<div class="phone">
+
+  <!-- STATUS BAR -->
+  <div class="sb">
+    <span>9:41</span>
+    <div class="sb-r">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="5" width="3" height="7" rx="1" fill="#1C1B19" opacity="0.25"/><rect x="4.5" y="3.5" width="3" height="8.5" rx="1" fill="#1C1B19" opacity="0.5"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#1C1B19" opacity="0.75"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="#1C1B19"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="#1C1B19"/><path d="M2.5 5.5C4 4 5.9 3 8 3s4 1 5.5 2.5" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M0.5 3C2.4 1.1 5.1 0 8 0s5.6 1.1 7.5 3" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none" opacity="0.4"/><path d="M4.5 7.5C5.5 6.5 6.7 6 8 6s2.5.5 3.5 1.5" stroke="#1C1B19" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#1C1B19" stroke-opacity="0.3"/><rect x="1.5" y="1.5" width="15" height="9" rx="2.5" fill="#1C1B19"/><path d="M23 4.5V7.5c1-.4 1.8-1.2 1.8-1.5s-.8-1.1-1.8-1.5z" fill="#1C1B19" opacity="0.4"/></svg>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-title">Activity<span>What Memo has been up to</span></div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-val">24</div>
+      <div class="stat-lbl">Tasks this week</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">3h 14m</div>
+      <div class="stat-lbl">Time saved</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">1</div>
+      <div class="stat-lbl">Alert pending</div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <button class="pill active" onclick="filterAct('all',this)">All</button>
+    <button class="pill" onclick="filterAct('task',this)">Tasks</button>
+    <button class="pill" onclick="filterAct('alert',this)">Alerts</button>
+    <button class="pill" onclick="filterAct('unlock',this)">New skills</button>
+  </div>
+
+  <!-- FEED -->
+  <div class="scroll" id="act-scroll">
+    <div class="hero-card" onclick="openLiveFeed()" style="cursor:pointer">
+      <img class="hero-image" src="2.webp" data-robot-config-image data-robot-config-src-blue="Blue%20hatted%20in%20action.jpg" alt="Memo robot operating during a task">
+      <div class="hero-overlay">
+        <div class="hero-kicker">Live work</div>
+        <div class="hero-title">A clearer view of Memo while it works</div>
+        <div class="hero-copy">Recent runs, alerts, and recoveries sit right below the latest operation snapshot.</div>
+      </div>
+    </div>
+
+    <!-- TODAY -->
+    <div class="date-group">
+      <div class="date-label">Today</div>
+
+      <!-- Alert: wheel sensor — expanded with action -->
+      <div class="act-card type-alert" data-type="alert">
+        <div class="act-main-row">
+          <div class="act-icon ai-alert">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" stroke="#C13A1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1L17 15H1L9 1z"/><line x1="9" y1="8" x2="9" y2="12"/><circle cx="9" cy="15" r="0.8" fill="#C13A1A" stroke="none"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">Wheel sensor needs cleaning</div>
+            <div class="act-sub">Debris detected on the right front sensor. Navigation accuracy may be reduced until cleaned.</div>
+            <div class="act-meta">9:41 am <div class="act-meta-dot"></div> Action needed</div>
+          </div>
+          <span class="act-badge ab-alert">Alert</span>
+        </div>
+        <div class="act-action">
+          <span class="act-action-text">Takes about 2 minutes with a soft cloth.</span>
+          <button class="act-action-btn secondary" onclick="this.closest('.act-action').innerHTML='<span style=\'font-size:12px;color:var(--green)\'>Marked as done ✓</span>'">Done</button>
+          <button class="act-action-btn" onclick="openFix()">How to fix →</button>
+        </div>
+      </div>
+
+      <!-- New skill unlock -->
+      <div class="act-card type-unlock" data-type="unlock">
+        <div class="act-main-row">
+          <div class="act-icon ai-unlock">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#6D28D9" stroke-width="1.7" stroke-linecap="round"><path d="M8 1l1.6 4.4H14l-3.6 2.6 1.4 4.4L8 9.8l-3.8 2.6 1.4-4.4L2 5.4h4.4L8 1z"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">New skill unlocked — counter wiping</div>
+            <div class="act-sub">Memo can now wipe down kitchen countertops. Scheduled for weekdays at 1:30 pm.</div>
+            <div class="act-meta">3:15 pm <div class="act-meta-dot"></div> New</div>
+          </div>
+          <span class="act-badge ab-unlock">New skill</span>
+        </div>
+      </div>
+
+      <!-- Coffee task -->
+      <div class="act-card type-task" data-type="task">
+        <div class="act-main-row">
+          <div class="act-icon ai-task">
+            <svg width="16" height="16" viewBox="0 0 14 12" fill="none" stroke="#1A7A46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 6 5 10 13 1"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">Pulled an espresso shot</div>
+            <div class="act-sub">Portafilter locked, 27-second extraction. Crema detected.</div>
+            <div class="act-meta">7:00 am <div class="act-meta-dot"></div> 4 min <div class="act-meta-dot"></div> Kitchen</div>
+          </div>
+          <span class="act-badge ab-ok">Done</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- YESTERDAY -->
+    <div class="date-group">
+      <div class="date-label">Yesterday</div>
+
+      <!-- Dishes task -->
+      <div class="act-card type-task" data-type="task">
+        <div class="act-main-row">
+          <div class="act-icon ai-task">
+            <svg width="16" height="16" viewBox="0 0 14 12" fill="none" stroke="#1A7A46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 6 5 10 13 1"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">Loaded 14 items into the dishwasher</div>
+            <div class="act-sub">2 wine glasses, 4 plates, 6 items of cutlery, 2 cups. Cycle started.</div>
+            <div class="act-meta">6:42 pm <div class="act-meta-dot"></div> 11 min <div class="act-meta-dot"></div> Kitchen</div>
+          </div>
+          <span class="act-badge ab-ok">Done</span>
+        </div>
+      </div>
+
+      <!-- Counter wipe -->
+      <div class="act-card type-task" data-type="task">
+        <div class="act-main-row">
+          <div class="act-icon ai-task">
+            <svg width="16" height="16" viewBox="0 0 14 12" fill="none" stroke="#1A7A46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 6 5 10 13 1"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">Wiped kitchen countertop</div>
+            <div class="act-sub">Full left-to-right pass. Cloth returned to holder.</div>
+            <div class="act-meta">2:00 pm <div class="act-meta-dot"></div> 6 min <div class="act-meta-dot"></div> Kitchen</div>
+          </div>
+          <span class="act-badge ab-ok">Done</span>
+        </div>
+      </div>
+
+      <!-- Laundry — partial warning — expandable with recording -->
+      <div class="act-card type-warn" id="laundry-card" data-type="task" onclick="toggleLaundry()" style="cursor:pointer">
+        <div class="act-main-row">
+          <div class="act-icon ai-warn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#B45309" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="5" x2="8" y2="8.5"/><circle cx="8" cy="11" r="0.8" fill="#B45309" stroke="none"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">Laundry — 5 pairs folded, 1 unmatched</div>
+            <div class="act-sub">One sock set aside on the right side of the basket. Check when you get a chance.</div>
+            <div class="act-meta">9:00 pm <div class="act-meta-dot"></div> 18 min <div class="act-meta-dot"></div> Laundry room</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+            <span class="act-badge ab-warn">Partial</span>
+            <svg id="laundry-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#B45309" stroke-width="1.5" stroke-linecap="round" style="transition:transform 0.25s"><polyline points="2 4 6 8 10 4"/></svg>
+          </div>
+        </div>
+
+        <!-- INLINE RECORDING PLAYER — collapsed by default -->
+        <div id="laundry-recording" style="max-height:0;overflow:hidden;transition:max-height 0.42s cubic-bezier(0.32,0.72,0,1)">
+          <div style="border-top:1px solid #FEF3C7">
+
+            <!-- Camera feed area -->
+            <div class="rec-feed" id="rec-feed">
+              <div class="rec-grid"></div>
+              <div class="rec-scanline" id="rec-scanline"></div>
+
+              <!-- Timeline scrubber overlay — shows frame position -->
+              <div class="rec-moment-flag" id="rec-flag" style="display:none">
+                <div class="rec-flag-pill">Unmatched sock flagged</div>
+                <div class="rec-flag-tail"></div>
+              </div>
+
+              <!-- Simulated scene: sock pile blobs -->
+              <div class="rec-scene" id="rec-scene">
+                <!-- basket outline -->
+                <div style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:120px;height:50px;border:1.5px solid rgba(255,255,255,0.12);border-radius:8px;background:rgba(255,255,255,0.03)"></div>
+                <!-- matched sock pairs — white-ish blobs -->
+                <div class="sock-blob" style="bottom:30px;left:90px;width:22px;height:14px;background:rgba(255,255,255,0.15);border-radius:6px"></div>
+                <div class="sock-blob" style="bottom:30px;left:116px;width:22px;height:14px;background:rgba(255,255,255,0.15);border-radius:6px"></div>
+                <div class="sock-blob" style="bottom:48px;left:100px;width:20px;height:12px;background:rgba(255,255,255,0.12);border-radius:5px"></div>
+                <div class="sock-blob" style="bottom:48px;left:125px;width:20px;height:12px;background:rgba(255,255,255,0.12);border-radius:5px"></div>
+                <div class="sock-blob" style="bottom:62px;left:105px;width:18px;height:11px;background:rgba(255,255,255,0.1);border-radius:5px"></div>
+                <!-- unmatched sock — amber highlight, starts off -->
+                <div class="sock-blob" id="unmatch-sock" style="bottom:26px;left:155px;width:24px;height:15px;background:rgba(255,255,255,0.08);border-radius:6px;transition:background 0.5s,box-shadow 0.5s"></div>
+                <!-- detection box — hidden until flagged -->
+                <div id="detect-box" style="position:absolute;bottom:20px;left:148px;width:38px;height:28px;border:1.5px solid rgba(232,93,36,0);border-radius:4px;transition:border-color 0.4s"></div>
+              </div>
+
+              <!-- Badges -->
+              <div class="rec-live-badge">
+                <div class="rec-rec-dot"></div>
+                <span class="rec-live-text">REC</span>
+              </div>
+              <div class="rec-ts" id="rec-ts">9:16 pm</div>
+              <div class="rec-room">Memo camera · laundry room</div>
+
+              <!-- Pause/play overlay tap target -->
+              <div style="position:absolute;inset:0;z-index:5" onclick="event.stopPropagation(); togglePlay()"></div>
+
+              <!-- Play icon shown when paused -->
+              <div id="play-icon" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:6;display:none">
+                <svg width="14" height="16" viewBox="0 0 14 16" fill="none"><path d="M1 1l12 7-12 7V1z" fill="white"/></svg>
+              </div>
+            </div>
+
+            <!-- TIMELINE SCRUBBER -->
+            <div class="rec-timeline" onclick="event.stopPropagation()">
+              <div class="rec-tl-track">
+                <div class="rec-tl-fill" id="rec-fill"></div>
+                <!-- event marker at ~72% (the flag moment) -->
+                <div class="rec-tl-marker" style="left:72%" title="Unmatched sock flagged"></div>
+                <div class="rec-tl-thumb" id="rec-thumb"></div>
+              </div>
+              <div class="rec-tl-labels">
+                <span>9:00 pm</span>
+                <span id="rec-cur-time">9:13 pm</span>
+                <span>9:18 pm</span>
+              </div>
+            </div>
+
+            <!-- PLAYBACK LOG -->
+            <div class="rec-log" id="rec-log">
+              <div class="rec-log-row rec-log-ok">
+                <span class="rec-log-ts">9:04</span>
+                <div class="rec-log-dot" style="background:#4ADE80"></div>
+                <span class="rec-log-text">Pair 1 matched — grey crew socks</span>
+              </div>
+              <div class="rec-log-row rec-log-ok">
+                <span class="rec-log-ts">9:07</span>
+                <div class="rec-log-dot" style="background:#4ADE80"></div>
+                <span class="rec-log-text">Pair 2 matched — white ankle socks</span>
+              </div>
+              <div class="rec-log-row rec-log-ok">
+                <span class="rec-log-ts">9:10</span>
+                <div class="rec-log-dot" style="background:#4ADE80"></div>
+                <span class="rec-log-text">Pairs 3, 4 &amp; 5 matched and stacked</span>
+              </div>
+              <div class="rec-log-row rec-log-warn" id="rec-warn-row" style="opacity:0.3">
+                <span class="rec-log-ts">9:13</span>
+                <div class="rec-log-dot" style="background:#E85D24"></div>
+                <span class="rec-log-text rec-log-text-warn">No match found — sock set aside (right of basket)</span>
+              </div>
+            </div>
+
+            <!-- JUMP TO ERROR BUTTON -->
+            <div style="padding:10px 14px 14px;display:flex;gap:8px" onclick="event.stopPropagation()">
+              <button class="rec-jump-btn" onclick="jumpToError()">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5.5 1v4.5l3 2"/><circle cx="5.5" cy="5.5" r="4.5" stroke-opacity="0.5"/></svg>
+                Jump to error
+              </button>
+              <button class="rec-dismiss-btn" onclick="toggleLaundry()">Dismiss</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Coffee -->
+      <div class="act-card type-task" data-type="task">
+        <div class="act-main-row">
+          <div class="act-icon ai-task">
+            <svg width="16" height="16" viewBox="0 0 14 12" fill="none" stroke="#1A7A46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 6 5 10 13 1"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">Pulled an espresso shot</div>
+            <div class="act-meta">7:00 am <div class="act-meta-dot"></div> 4 min <div class="act-meta-dot"></div> Kitchen</div>
+          </div>
+          <span class="act-badge ab-ok">Done</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 DAYS AGO -->
+    <div class="date-group">
+      <div class="date-label">2 days ago</div>
+
+      <div class="act-card type-task" data-type="task">
+        <div class="act-main-row">
+          <div class="act-icon ai-task">
+            <svg width="16" height="16" viewBox="0 0 14 12" fill="none" stroke="#1A7A46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 6 5 10 13 1"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">Arranged shoes at the entrance</div>
+            <div class="act-sub">2 pairs paired and aligned.</div>
+            <div class="act-meta">6:30 pm <div class="act-meta-dot"></div> 5 min <div class="act-meta-dot"></div> Hallway</div>
+          </div>
+          <span class="act-badge ab-ok">Done</span>
+        </div>
+      </div>
+
+      <div class="act-card type-task" data-type="task">
+        <div class="act-main-row">
+          <div class="act-icon ai-task">
+            <svg width="16" height="16" viewBox="0 0 14 12" fill="none" stroke="#1A7A46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 6 5 10 13 1"/></svg>
+          </div>
+          <div class="act-body">
+            <div class="act-title">Loaded 11 items into the dishwasher</div>
+            <div class="act-meta">7:15 pm <div class="act-meta-dot"></div> 9 min <div class="act-meta-dot"></div> Kitchen</div>
+          </div>
+          <span class="act-badge ab-ok">Done</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end scroll -->
+
+  <div class="live-overlay" id="live-overlay" onclick="closeLiveFeed(event)">
+    <div class="live-sheet">
+      <div class="live-handle"></div>
+      <div class="live-header">
+        <div>
+          <div class="live-title">Memo live feed</div>
+          <div class="live-sub">A direct view of what Memo is seeing while it finishes the current kitchen run.</div>
+        </div>
+        <button class="live-close" onclick="closeLiveFeed()" aria-label="Close live feed">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#6B6960" stroke-width="1.8" stroke-linecap="round">
+            <line x1="1" y1="1" x2="11" y2="11"/>
+            <line x1="11" y1="1" x2="1" y2="11"/>
+          </svg>
+        </button>
+      </div>
+      <div class="live-scroll">
+        <div class="live-stage">
+          <div class="live-grid"></div>
+          <div class="live-scanline"></div>
+          <div class="live-focus">
+            <div class="lf-tl"></div><div class="lf-tr"></div>
+            <div class="lf-bl"></div><div class="lf-br"></div>
+          </div>
+          <div class="live-depth-floor"></div>
+          <div class="live-depth-left"></div>
+          <div class="live-depth-mid"></div>
+          <div class="live-depth-right"></div>
+          <div class="live-pill"><div class="live-rec"></div><span>LIVE</span></div>
+          <div class="live-clock" id="live-clock">0:38</div>
+          <div class="live-room">Memo camera &middot; kitchen</div>
+        </div>
+
+        <div class="live-metrics">
+          <div class="live-metric">
+            <div class="live-metric-label">Status</div>
+            <div class="live-metric-value">On task</div>
+          </div>
+          <div class="live-metric">
+            <div class="live-metric-label">Battery</div>
+            <div class="live-metric-value">73%</div>
+          </div>
+          <div class="live-metric">
+            <div class="live-metric-label">Runtime</div>
+            <div class="live-metric-value">9 min</div>
+          </div>
+        </div>
+
+        <div class="live-events">
+          <div class="live-event">
+            <div class="live-event-time">Now</div>
+            <div class="live-event-title">Top shelf placement</div>
+            <div class="live-event-copy">Glassware is being placed on the upper rack while cutlery stays queued below.</div>
+          </div>
+          <div class="live-event">
+            <div class="live-event-time">Up next</div>
+            <div class="live-event-title">Cycle start check</div>
+            <div class="live-event-copy">Memo will verify the dishwasher door is latched before leaving the station.</div>
+          </div>
+        </div>
+
+        <div class="live-action-row">
+          <button class="live-action-btn secondary" onclick="closeLiveFeed()">Close feed</button>
+          <button class="live-action-btn primary" onclick="navigateWithConfig('memo-map.html')">Open map</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO FIX: WHEEL SENSOR -->
+  <div class="fix-overlay" id="fix-overlay" onclick="closeFix(event)">
+    <div class="fix-sheet">
+      <div class="fix-handle"></div>
+      <div class="fix-header">
+        <div class="fix-title-row">
+          <div class="fix-alert-icon">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" stroke="#C13A1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1L17 15H1L9 1z"/><line x1="9" y1="8" x2="9" y2="12"/><circle cx="9" cy="15" r="0.8" fill="#C13A1A" stroke="none"/></svg>
+          </div>
+          <span class="fix-title">Clean wheel sensor</span>
+        </div>
+        <button class="fix-close" onclick="closeFix()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#6B6960" stroke-width="1.8" stroke-linecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+        </button>
+      </div>
+
+      <div class="fix-scroll">
+        <p class="fix-desc">Debris on the right front wheel sensor is reducing Memo's navigation accuracy. A quick clean takes about 2 minutes and no tools are needed.</p>
+
+        <!-- SENSOR DIAGRAM -->
+        <div class="sensor-diagram">
+          <div class="sensor-diagram-grid"></div>
+          <svg width="100%" viewBox="0 0 320 140" xmlns="http://www.w3.org/2000/svg">
+            <!-- Memo base / wheeled chassis top-down view -->
+            <rect x="80" y="20" width="160" height="100" rx="20" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+            <!-- four wheel circles -->
+            <circle cx="100" cy="38" r="10" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+            <circle cx="220" cy="38" r="10" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+            <circle cx="100" cy="102" r="10" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+            <circle cx="220" cy="102" r="10" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+            <!-- sensor dots on each wheel -->
+            <circle cx="100" cy="38" r="4" fill="rgba(255,255,255,0.2)"/>
+            <circle cx="220" cy="38" r="4" fill="rgba(255,255,255,0.2)"/>
+            <circle cx="100" cy="102" r="4" fill="rgba(255,255,255,0.2)"/>
+            <!-- FAULTY sensor — right front — highlighted orange/red -->
+            <circle cx="220" cy="102" r="10" fill="rgba(232,93,36,0.18)" stroke="#E85D24" stroke-width="1.8"/>
+            <circle cx="220" cy="102" r="4" fill="#E85D24"/>
+            <!-- pulsing ring on faulty sensor -->
+            <circle cx="220" cy="102" r="10" fill="none" stroke="#E85D24" stroke-width="1.2" opacity="0.5">
+              <animate attributeName="r" values="10;16;10" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <!-- label arrow -->
+            <line x1="220" y1="88" x2="260" y2="60" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="3 2"/>
+            <text x="264" y="57" font-family="Geist,sans-serif" font-size="9" fill="#E85D24" font-weight="500">Right front</text>
+            <text x="264" y="68" font-family="Geist,sans-serif" font-size="9" fill="rgba(255,255,255,0.4)">needs cleaning</text>
+            <!-- TOP label -->
+            <text x="160" y="14" font-family="Geist,sans-serif" font-size="8" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="0.06em">TOP VIEW — WHEEL BASE</text>
+            <!-- front arrow -->
+            <polygon points="160,25 155,32 165,32" fill="rgba(255,255,255,0.2)"/>
+            <text x="160" y="42" font-family="Geist,sans-serif" font-size="8" fill="rgba(255,255,255,0.25)" text-anchor="middle">FRONT</text>
+          </svg>
+        </div>
+
+        <!-- STEPS -->
+        <div class="fix-steps" id="fix-steps">
+
+          <div class="fix-step" id="fstep-0">
+            <div class="fix-step-num" id="fnum-0">1</div>
+            <div class="fix-step-body">
+              <div class="fix-step-title">Make sure Memo is parked</div>
+              <div class="fix-step-sub">Tap "Stop" if Memo is mid-task. Wait for the status light to turn solid white before continuing.</div>
+            </div>
+          </div>
+
+          <div class="fix-step" id="fstep-1">
+            <div class="fix-step-num" id="fnum-1">2</div>
+            <div class="fix-step-body">
+              <div class="fix-step-title">Locate the right front wheel</div>
+              <div class="fix-step-sub">Face Memo from the front. The right front wheel is on your left. The sensor is the small dark lens on the inner edge of the wheel housing.</div>
+              <div class="fix-step-visual">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                  <rect x="4" y="4" width="28" height="28" rx="8" fill="#FFF2E5"/>
+                  <circle cx="18" cy="18" r="8" stroke="#D4631A" stroke-width="1.6" fill="none"/>
+                  <circle cx="18" cy="18" r="3" fill="#D4631A"/>
+                  <line x1="10" y1="10" x2="14" y2="14" stroke="#D4631A" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="fix-step-visual-text">The sensor is a small circular lens about 8mm wide, flush with the wheel casing.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="fix-step" id="fstep-2">
+            <div class="fix-step-num" id="fnum-2">3</div>
+            <div class="fix-step-body">
+              <div class="fix-step-title">Wipe with a soft dry cloth</div>
+              <div class="fix-step-sub">Use a microfibre cloth or a dry cotton pad. Gently wipe the lens in a circular motion 3–4 times. No liquids needed.</div>
+              <div class="fix-step-visual">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                  <rect x="4" y="4" width="28" height="28" rx="8" fill="#EBF5EF"/>
+                  <path d="M12 20 Q18 12 24 20" stroke="#1A7A46" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                  <path d="M14 22 Q18 16 22 22" stroke="#1A7A46" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.5"/>
+                </svg>
+                <span class="fix-step-visual-text">Avoid paper towels — they can leave lint on the sensor.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="fix-step" id="fstep-3">
+            <div class="fix-step-num" id="fnum-3">4</div>
+            <div class="fix-step-body">
+              <div class="fix-step-title">Restart Memo's navigation</div>
+              <div class="fix-step-sub">Tap the button below to confirm the clean is done. Memo will run a quick sensor check and resume normal operation.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- WARNING -->
+        <div class="fix-warning">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#B45309" stroke-width="1.7" stroke-linecap="round" flex-shrink="0" style="flex-shrink:0;margin-top:1px"><circle cx="8" cy="8" r="7"/><line x1="8" y1="5" x2="8" y2="8.5"/><circle cx="8" cy="11" r="0.8" fill="#B45309" stroke="none"/></svg>
+          <span class="fix-warning-text">Never use water, alcohol, or cleaning sprays near the sensors. The silicone shell can be wiped with household cleaners, but sensor lenses should only be dry-cleaned.</span>
+        </div>
+
+        <!-- STEP THROUGH BUTTON -->
+        <button class="fix-done-btn" id="fix-cta" onclick="advanceStep()">Start — mark step 1 done</button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="n-item"><svg width="22" height="20" viewBox="0 0 22 20" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8.5L11 1l10 7.5V19a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V8.5z"/><path d="M8 20v-8h6v8"/></svg><span class="n-lbl">Home</span></div>
+    <div class="n-item"><svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 1L1 13h9l-1 8 10-12h-9l1-8z"/></svg><span class="n-lbl">Skills</span></div>
+    <div class="n-item"><svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="18" height="18" rx="3"/><line x1="14" y1="1" x2="14" y2="5"/><line x1="6" y1="1" x2="6" y2="5"/><line x1="1" y1="9" x2="19" y2="9"/></svg><span class="n-lbl">Schedule</span></div>
+    <div class="n-item"><svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#9E9C94" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5l6-4 6 4 6-4v16l-6 4-6-4-6 4V5z"/><line x1="7" y1="1" x2="7" y2="17"/><line x1="13" y1="5" x2="13" y2="21"/></svg><span class="n-lbl">Map</span></div>
+    <div class="n-item"><svg width="20" height="22" viewBox="0 0 20 22" fill="none" stroke="#1C1B19" stroke-width="1.7" stroke-linecap="round"><line x1="4" y1="22" x2="4" y2="14"/><line x1="9" y1="22" x2="9" y2="6"/><line x1="14" y1="22" x2="14" y2="10"/><line x1="19" y1="22" x2="19" y2="2"/></svg><span class="n-lbl on">Activity</span><div class="n-pip"></div></div>
+  </div>
+
+</div>
+<script>
+function filterAct(type, btn) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.act-card').forEach(c => {
+    c.style.display = (type === 'all' || c.dataset.type === type) ? '' : 'none';
+  });
+  document.querySelectorAll('.date-group').forEach(g => {
+    const visible = [...g.querySelectorAll('.act-card')].some(c => c.style.display !== 'none');
+    g.style.display = visible ? '' : 'none';
+  });
+}
+
+let liveFeedTimer = null;
+let liveFeedStartedAt = null;
+
+function updateLiveClock() {
+  if (!liveFeedStartedAt) return;
+  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - liveFeedStartedAt) / 1000));
+  const minutes = Math.floor(elapsedSeconds / 60);
+  const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+  document.getElementById('live-clock').textContent = `${minutes}:${seconds}`;
+}
+
+function openLiveFeed() {
+  document.getElementById('live-overlay').classList.add('open');
+  liveFeedStartedAt = Date.now() - 38000;
+  updateLiveClock();
+  clearInterval(liveFeedTimer);
+  liveFeedTimer = setInterval(updateLiveClock, 1000);
+}
+
+function closeLiveFeed(event) {
+  if (!event || event.target === document.getElementById('live-overlay')) {
+    document.getElementById('live-overlay').classList.remove('open');
+    clearInterval(liveFeedTimer);
+    liveFeedStartedAt = null;
+  }
+}
+
+const activityParams = new URLSearchParams(window.location.search);
+if (activityParams.get('show') === 'live') {
+  window.addEventListener('load', () => {
+    setTimeout(openLiveFeed, 250);
+  }, { once: true });
+}
+
+// ── LAUNDRY RECORDING PLAYER ─────────────────────────────
+let laundryOpen = false;
+let playInterval = null;
+let playPos = 0;
+let playing = false;
+let errorShown = false;
+
+function toggleLaundry() {
+  laundryOpen = !laundryOpen;
+  const panel = document.getElementById('laundry-recording');
+  const chevron = document.getElementById('laundry-chevron');
+  if (laundryOpen) {
+    panel.style.maxHeight = '500px';
+    chevron.style.transform = 'rotate(180deg)';
+    setTimeout(() => startPlay(), 450);
+  } else {
+    panel.style.maxHeight = '0';
+    chevron.style.transform = '';
+    stopPlay();
+    resetRecording();
+  }
+}
+
+function startPlay() {
+  if (playing) return;
+  playing = true;
+  document.getElementById('play-icon').style.display = 'none';
+  playInterval = setInterval(() => {
+    playPos = Math.min(playPos + 0.6, 100);
+    updateScrubber(playPos);
+    if (playPos >= 72 && !errorShown) showError();
+    if (playPos >= 100) stopPlay();
+  }, 80);
+}
+
+function stopPlay() {
+  playing = false;
+  clearInterval(playInterval);
+  const pi = document.getElementById('play-icon');
+  if (pi) pi.style.display = 'flex';
+}
+
+function togglePlay() {
+  if (playing) stopPlay(); else startPlay();
+}
+
+function jumpToError() {
+  stopPlay();
+  errorShown = false;
+  playPos = 68;
+  updateScrubber(playPos);
+  // reset error visuals before replaying
+  const sock = document.getElementById('unmatch-sock');
+  if (sock) { sock.style.background = 'rgba(255,255,255,0.08)'; sock.style.boxShadow = ''; }
+  const db = document.getElementById('detect-box');
+  if (db) db.style.borderColor = 'rgba(232,93,36,0)';
+  const rf = document.getElementById('rec-flag');
+  if (rf) rf.style.display = 'none';
+  const wr = document.getElementById('rec-warn-row');
+  if (wr) { wr.style.opacity = '0.3'; wr.style.background = ''; }
+  setTimeout(() => startPlay(), 100);
+}
+
+function updateScrubber(pct) {
+  const fill  = document.getElementById('rec-fill');
+  const thumb = document.getElementById('rec-thumb');
+  const ts    = document.getElementById('rec-ts');
+  const cur   = document.getElementById('rec-cur-time');
+  if (!fill) return;
+  fill.style.width  = pct + '%';
+  thumb.style.left  = pct + '%';
+  const mins = Math.floor((pct / 100) * 18);
+  const disp = '9:' + String(mins).padStart(2,'0') + ' pm';
+  ts.textContent  = disp;
+  cur.textContent = disp;
+}
+
+function showError() {
+  errorShown = true;
+  const sock = document.getElementById('unmatch-sock');
+  if (sock) { sock.style.background = 'rgba(232,93,36,0.4)'; sock.style.boxShadow = '0 0 0 4px rgba(232,93,36,0.25)'; }
+  const db = document.getElementById('detect-box');
+  if (db) db.style.borderColor = '#E85D24';
+  const rf = document.getElementById('rec-flag');
+  if (rf) rf.style.display = 'flex';
+  const wr = document.getElementById('rec-warn-row');
+  if (wr) { wr.style.opacity = '1'; wr.style.background = 'rgba(232,93,36,0.05)'; }
+  // scroll log to warn row
+  if (wr) wr.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  stopPlay();
+  setTimeout(() => startPlay(), 1400);
+}
+
+function resetRecording() {
+  playPos = 0; errorShown = false; playing = false;
+  clearInterval(playInterval);
+  const fill  = document.getElementById('rec-fill');
+  const thumb = document.getElementById('rec-thumb');
+  if (fill)  fill.style.width = '0%';
+  if (thumb) thumb.style.left = '0%';
+  const sock = document.getElementById('unmatch-sock');
+  if (sock) { sock.style.background = 'rgba(255,255,255,0.08)'; sock.style.boxShadow = ''; }
+  const db = document.getElementById('detect-box');
+  if (db) db.style.borderColor = 'rgba(232,93,36,0)';
+  const rf = document.getElementById('rec-flag');
+  if (rf) rf.style.display = 'none';
+  const wr = document.getElementById('rec-warn-row');
+  if (wr) { wr.style.opacity = '0.3'; wr.style.background = ''; }
+  const pi = document.getElementById('play-icon');
+  if (pi) pi.style.display = 'none';
+}
+
+// ── HOW TO FIX ───────────────────────────────────────
+let fixStep = 0;
+const fixLabels = [
+  'Start — mark step 1 done',
+  'Done — mark step 2 done',
+  'Done — mark step 3 done',
+  'Confirm clean complete',
+];
+
+function openFix() {
+  fixStep = 0;
+  // reset all step numbers
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('fnum-' + i).classList.remove('done');
+    document.getElementById('fnum-' + i).textContent = i + 1;
+  }
+  document.getElementById('fix-cta').textContent = fixLabels[0];
+  document.getElementById('fix-overlay').classList.add('open');
+}
+
+function closeFix(e) {
+  if (!e || e.target === document.getElementById('fix-overlay')) {
+    document.getElementById('fix-overlay').classList.remove('open');
+  }
+}
+
+function advanceStep() {
+  // Mark current step done
+  const num = document.getElementById('fnum-' + fixStep);
+  num.classList.add('done');
+  num.innerHTML = '<svg width="10" height="9" viewBox="0 0 10 9" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4.5 4 7.5 9 1"/></svg>';
+
+  fixStep++;
+
+  if (fixStep < 4) {
+    document.getElementById('fix-cta').textContent = fixLabels[fixStep];
+    // scroll to next step
+    const nextStep = document.getElementById('fstep-' + fixStep);
+    if (nextStep) nextStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    // all done
+    document.getElementById('fix-cta').textContent = 'All done — Memo resuming';
+    document.getElementById('fix-cta').style.background = 'var(--green)';
+    document.getElementById('fix-cta').style.color = 'white';
+    setTimeout(() => {
+      document.getElementById('fix-overlay').classList.remove('open');
+      // also mark the alert action as resolved
+      const action = document.querySelector('.act-action');
+      if (action) action.innerHTML = '<span style="font-size:12px;color:var(--green);font-weight:500">✓ Sensor cleaned — Memo is resuming navigation</span>';
+    }, 1400);
+  }
+}
+</script>
+<script>
+(function () {
+  const routes = {
+    Home: 'memo-dashboard-v5.html',
+    Skills: 'memo-skills-v3.html',
+    Schedule: 'memo-schedule.html',
+    Map: 'memo-map.html',
+    Activity: 'memo-activity.html'
+  };
+
+  document.querySelectorAll('.bottom-nav .n-item').forEach((item) => {
+    const label = item.querySelector('.n-lbl');
+    if (!label) return;
+    const href = routes[label.textContent.trim()];
+    if (!href) return;
+    const go = () => { navigateWithConfig(href); };
+    item.setAttribute('role', 'link');
+    item.tabIndex = 0;
+    item.addEventListener('click', go);
+    item.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        go();
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

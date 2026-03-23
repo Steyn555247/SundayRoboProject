@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memo</title>
+</head>
+<body>
+<script>
+const params = new URLSearchParams(window.location.search);
+const target = new URL('memo-onboarding.html', window.location.href);
+const config = params.get('config');
+if (['orange', 'green', 'yellow', 'blue'].includes(config)) {
+  if (config === 'orange') {
+    target.searchParams.delete('config');
+  } else {
+    target.searchParams.set('config', config);
+  }
+}
+window.location.replace(target.toString());
+</script>
+<p><a href="memo-onboarding.html">Open Memo onboarding</a></p>
+<p><a href="memo-onboarding.html?config=green">Open green configuration preview</a></p>
+<p><a href="memo-onboarding.html?config=yellow">Open yellow configuration preview</a></p>
+<p><a href="memo-onboarding.html?config=blue">Open blue configuration preview</a></p>
+</body>
+</html>
