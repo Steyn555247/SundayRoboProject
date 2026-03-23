@@ -3,7 +3,7 @@
   const DEFAULT_CONFIG = 'orange';
   const ONBOARDING_PAGE = 'memo-onboarding.html';
   const APP_HOME_PAGE = 'memo-dashboard-v5.html';
-  const APP_INTRO_SESSION_KEY = 'memoAppIntroSeen';
+  const APP_INTRO_STORAGE_KEY = 'memoAppIntroSeen';
   const SUNDAY_URL = 'https://sunday.ai';
   const STEYN_LINKEDIN_URL = 'https://www.linkedin.com/in/steyn-knollema';
   const APP_BUTTON_YELLOW = '#F5E100';
@@ -292,7 +292,7 @@
 
   function hasSeenAppIntro() {
     try {
-      return window.sessionStorage.getItem(APP_INTRO_SESSION_KEY) === 'true';
+      return window.localStorage.getItem(APP_INTRO_STORAGE_KEY) === 'true';
     } catch (error) {
       return false;
     }
@@ -300,7 +300,7 @@
 
   function markAppIntroSeen() {
     try {
-      window.sessionStorage.setItem(APP_INTRO_SESSION_KEY, 'true');
+      window.localStorage.setItem(APP_INTRO_STORAGE_KEY, 'true');
     } catch (error) {
       // Ignore storage failures and keep the preview functional.
     }
@@ -1224,7 +1224,7 @@
   }
 
   function injectAppIntroOverlay() {
-    if (!document.body || !isAppPage() || hasSeenAppIntro()) return;
+    if (!document.body || hasSeenAppIntro()) return;
 
     document.querySelectorAll('#app-intro-overlay, [data-app-intro-root="true"]').forEach((node) => {
       node.remove();
@@ -1245,6 +1245,7 @@
           <div class="app-intro-overlay__body">
             <p class="app-intro-overlay__copy">This is a concept idea of a consumer-facing Memo communication app, developed as an interest project around the work Sunday Robotics has been doing.</p>
             <p class="app-intro-overlay__copy">It explores how onboarding, home, skills, scheduling, activity, mapping, and settings could feel like one calm communication layer that is easier for everyday users to understand and act on.</p>
+            <p class="app-intro-overlay__copy">All ownership of the images and robot visuals shown here remains fully with Sunday Robotics.</p>
           </div>
           <div class="app-intro-overlay__actions">
             <button class="app-intro-overlay__action" type="button">Enter App</button>
